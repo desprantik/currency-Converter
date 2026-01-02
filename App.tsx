@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { ArrowDownUp, ChevronDown, Delete, Star, X, Clock } from 'lucide-react';
 import { CurrencySelector } from './components/CurrencySelector';
-import { supabase } from './utils/supabase/client';
+import { projectId, publicAnonKey } from './utils/supabase/info';
 
 // Map currency codes to country codes for flags
 const currencyToCountryCode: { [key: string]: string } = {
@@ -104,7 +104,8 @@ interface HistoryEntry {
   to_currency: string;
   rate: string;
   description: string;
-  timestamp: number;
+  timestamp?: number;
+  created_at?: string;
 }
 
 export default function App() {
@@ -116,8 +117,6 @@ export default function App() {
   const [loading, setLoading] = useState(true);
   const [favorites, setFavorites] = useState<FavoritePair[]>([]);
   const [isFavorite, setIsFavorite] = useState(false);
-  const [tableExists, setTableExists] = useState(true);
-  const [useLocalStorage, setUseLocalStorage] = useState(false);
   const [showFavorites, setShowFavorites] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
   const [showSaveHistory, setShowSaveHistory] = useState(false);
@@ -125,6 +124,7 @@ export default function App() {
   const [history, setHistory] = useState<HistoryEntry[]>([]);
 
   const API_KEY = 'b91b4ba5acae6d8300c177f0';
+  const SERVER_URL = `https://${projectId}.supabase.co/functions/v1/make-server-913e994f`;
 
   useEffect(() => {
     fetchExchangeRates();
@@ -163,82 +163,44 @@ export default function App() {
   }, [amount]);
 
   const fetchFavorites = async () => {
-    // Try localStorage first
-    const stored = localStorage.getItem('currency_favorites');
-    if (stored) {
-      try {
-        const parsed = JSON.parse(stored);
-        if (Array.isArray(parsed)) {
-          setFavorites(parsed);
-          setUseLocalStorage(true);
-          return; // Skip Supabase if we have localStorage data
-        }
-      } catch (e) {
-        // Silent fail - localStorage parse error
-      }
-    }
-
-    // Try Supabase silently
     try {
-      const { data, error } = await supabase
-        .from('favorite_pairs')
-        .select('*')
-        .order('created_at', { ascending: true });
+      const response = await fetch(`${SERVER_URL}/favorites`, {
+        headers: {
+          'Authorization': `Bearer ${publicAnonKey}`,
+        },
+      });
 
-      if (error) {
-        // Supabase not available, use localStorage
-        setTableExists(false);
-        setUseLocalStorage(true);
+      if (!response.ok) {
+        const error = await response.json();
+        console.error('Error fetching favorites:', error);
         return;
       }
 
-      setTableExists(true);
+      const { data } = await response.json();
       setFavorites(data || []);
-      setUseLocalStorage(false);
     } catch (error) {
-      // Supabase connection failed, use localStorage
-      setTableExists(false);
-      setUseLocalStorage(true);
+      console.error('❌ Error fetching favorites:', error);
     }
   };
 
   const fetchHistory = async () => {
-    // Try localStorage first
-    const stored = localStorage.getItem('currency_history');
-    if (stored) {
-      try {
-        const parsed = JSON.parse(stored);
-        if (Array.isArray(parsed)) {
-          setHistory(parsed);
-          setUseLocalStorage(true);
-          return; // Skip Supabase if we have localStorage data
-        }
-      } catch (e) {
-        // Silent fail - localStorage parse error
-      }
-    }
-
-    // Try Supabase silently
     try {
-      const { data, error } = await supabase
-        .from('history_entries')
-        .select('*')
-        .order('timestamp', { ascending: false });
+      const response = await fetch(`${SERVER_URL}/history`, {
+        headers: {
+          'Authorization': `Bearer ${publicAnonKey}`,
+        },
+      });
 
-      if (error) {
-        // Supabase not available, use localStorage
-        setTableExists(false);
-        setUseLocalStorage(true);
+      if (!response.ok) {
+        const error = await response.json();
+        console.error('Error fetching history:', error);
         return;
       }
 
-      setTableExists(true);
+      const { data } = await response.json();
       setHistory(data || []);
-      setUseLocalStorage(false);
     } catch (error) {
-      // Supabase connection failed, use localStorage
-      setTableExists(false);
-      setUseLocalStorage(true);
+      console.error('❌ Error fetching history:', error);
     }
   };
 
@@ -250,96 +212,58 @@ export default function App() {
   };
 
   const toggleFavorite = async () => {
-    if (useLocalStorage) {
-      // Use localStorage
-      if (isFavorite) {
-        const updated = favorites.filter(
-          (fav) => !(fav.from_currency === fromCurrency && fav.to_currency === toCurrency)
-        );
-        setFavorites(updated);
-        localStorage.setItem('currency_favorites', JSON.stringify(updated));
-      } else {
-        const newFav: FavoritePair = {
-          id: Date.now().toString(),
-          from_currency: fromCurrency,
-          to_currency: toCurrency,
-        };
-        const updated = [...favorites, newFav];
-        setFavorites(updated);
-        localStorage.setItem('currency_favorites', JSON.stringify(updated));
+    if (isFavorite) {
+      const favorite = favorites.find(
+        (fav) => fav.from_currency === fromCurrency && fav.to_currency === toCurrency
+      );
+      if (favorite) {
+        await removeFavorite(favorite.id);
       }
     } else {
-      // Use Supabase
-      if (isFavorite) {
-        const favorite = favorites.find(
-          (fav) => fav.from_currency === fromCurrency && fav.to_currency === toCurrency
-        );
-        if (favorite) {
-          await removeFavorite(favorite.id);
-        }
-      } else {
-        try {
-          const { data, error } = await supabase
-            .from('favorite_pairs')
-            .insert([{ from_currency: fromCurrency, to_currency: toCurrency }])
-            .select();
-
-          if (error) {
-            console.error('Error adding favorite to Supabase:', error);
-            // Fallback to localStorage
-            setUseLocalStorage(true);
-            const newFav: FavoritePair = {
-              id: Date.now().toString(),
-              from_currency: fromCurrency,
-              to_currency: toCurrency,
-            };
-            const updated = [...favorites, newFav];
-            setFavorites(updated);
-            localStorage.setItem('currency_favorites', JSON.stringify(updated));
-            return;
-          }
-
-          await fetchFavorites();
-        } catch (error) {
-          console.error('Error adding favorite:', error);
-          // Fallback to localStorage
-          setUseLocalStorage(true);
-          const newFav: FavoritePair = {
-            id: Date.now().toString(),
+      try {
+        const response = await fetch(`${SERVER_URL}/favorites`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${publicAnonKey}`,
+          },
+          body: JSON.stringify({
             from_currency: fromCurrency,
             to_currency: toCurrency,
-          };
-          const updated = [...favorites, newFav];
-          setFavorites(updated);
-          localStorage.setItem('currency_favorites', JSON.stringify(updated));
-        }
-      }
-    }
-  };
+          }),
+        });
 
-  const removeFavorite = async (id: string) => {
-    if (useLocalStorage) {
-      // Use localStorage
-      const updated = favorites.filter((fav) => fav.id !== id);
-      setFavorites(updated);
-      localStorage.setItem('currency_favorites', JSON.stringify(updated));
-    } else {
-      // Use Supabase
-      try {
-        const { error } = await supabase
-          .from('favorite_pairs')
-          .delete()
-          .eq('id', id);
-
-        if (error) {
-          console.error('Error removing favorite from Supabase:', error);
+        if (!response.ok) {
+          const error = await response.json();
+          console.error('Error adding favorite:', error);
           return;
         }
 
         await fetchFavorites();
       } catch (error) {
-        console.error('Error removing favorite:', error);
+        console.error('Error adding favorite:', error);
       }
+    }
+  };
+
+  const removeFavorite = async (id: string) => {
+    try {
+      const response = await fetch(`${SERVER_URL}/favorites/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${publicAnonKey}`,
+        },
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        console.error('Error removing favorite:', error);
+        return;
+      }
+
+      await fetchFavorites();
+    } catch (error) {
+      console.error('Error removing favorite:', error);
     }
   };
 
@@ -512,32 +436,65 @@ export default function App() {
     setToCurrency(fromCurrency);
   };
 
-  const saveToHistory = (description: string) => {
+  const saveToHistory = async (description: string) => {
     const rate = exchangeRates[toCurrency];
     if (!rate) return;
 
-    const newEntry: HistoryEntry = {
-      id: Date.now().toString(),
-      from_amount: amount,
-      from_currency: fromCurrency,
-      to_amount: (parseFloat(amount) * rate).toFixed(2),
-      to_currency: toCurrency,
-      rate: rate.toFixed(4),
-      description: description,
-      timestamp: Date.now(),
-    };
+    console.log('☁️ Saving to Supabase...');
+    try {
+      const response = await fetch(`${SERVER_URL}/history`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${publicAnonKey}`,
+        },
+        body: JSON.stringify({
+          from_amount: amount,
+          from_currency: fromCurrency,
+          to_amount: (parseFloat(amount) * rate).toFixed(2),
+          to_currency: toCurrency,
+          rate: rate.toFixed(4),
+          description: description,
+          timestamp: Date.now(),
+        }),
+      });
 
-    const updated = [newEntry, ...history];
-    setHistory(updated);
-    localStorage.setItem('currency_history', JSON.stringify(updated));
+      if (!response.ok) {
+        const error = await response.json();
+        console.error('❌ Error saving history:', error);
+        return;
+      }
+
+      const { data } = await response.json();
+      console.log('✅ Successfully saved to Supabase:', data);
+      await fetchHistory();
+    } catch (error) {
+      console.error('❌ Error saving history:', error);
+    }
+    
     setHistoryDescription('');
     setShowSaveHistory(false);
   };
 
-  const removeHistoryEntry = (id: string) => {
-    const updated = history.filter((entry) => entry.id !== id);
-    setHistory(updated);
-    localStorage.setItem('currency_history', JSON.stringify(updated));
+  const removeHistoryEntry = async (id: string) => {
+    try {
+      const response = await fetch(`${SERVER_URL}/history/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${publicAnonKey}`,
+        },
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        console.error('Error removing history:', error);
+        return;
+      }
+
+      await fetchHistory();
+    } catch (error) {
+      console.error('Error removing history:', error);
+    }
   };
 
   const loadHistoryEntry = (entry: HistoryEntry) => {
@@ -638,7 +595,9 @@ export default function App() {
                               {entry.description && (
                                 <p className="text-sm text-gray-600 mt-1">{entry.description}</p>
                               )}
-                              <p className="text-xs text-gray-400 mt-1">{formatDate(entry.timestamp)}</p>
+                              <p className="text-xs text-gray-400 mt-1">
+                                {formatDate(entry.timestamp || (entry.created_at ? new Date(entry.created_at).getTime() : Date.now()))}
+                              </p>
                             </button>
                             <button
                               onClick={() => removeHistoryEntry(entry.id)}
