@@ -3,84 +3,80 @@ import { ArrowDownUp, ChevronDown, Delete, Star, X, Clock } from 'lucide-react';
 import { CurrencySelector } from './components/CurrencySelector';
 import { supabase } from './utils/supabase/client';
 
-// Circular flag component with gradient background
+// Map currency codes to country codes for flags
+const currencyToCountryCode: { [key: string]: string } = {
+  USD: 'us', EUR: 'eu', GBP: 'gb', INR: 'in', JPY: 'jp',
+  AUD: 'au', CAD: 'ca', CHF: 'ch', CNY: 'cn', SGD: 'sg',
+  AED: 'ae', SAR: 'sa', NZD: 'nz', SEK: 'se', NOK: 'no',
+  MXN: 'mx', BRL: 'br', ZAR: 'za', HKD: 'hk', KRW: 'kr',
+  THB: 'th', TRY: 'tr', RUB: 'ru', PLN: 'pl', DKK: 'dk',
+  IDR: 'id', MYR: 'my', PHP: 'ph', ILS: 'il', CZK: 'cz',
+  CLP: 'cl', TWD: 'tw', ARS: 'ar', VND: 'vn', EGP: 'eg',
+  PKR: 'pk', BDT: 'bd', HUF: 'hu', UAH: 'ua', RON: 'ro',
+  NGN: 'ng', KES: 'ke', QAR: 'qa', OMR: 'om', KWD: 'kw',
+  BHD: 'bh', JOD: 'jo', LKR: 'lk', ISK: 'is', HRK: 'hr',
+  BGN: 'bg', MAD: 'ma', TND: 'tn', JMD: 'jm', PEN: 'pe',
+  COP: 'co', UYU: 'uy', GHS: 'gh', DZD: 'dz', KZT: 'kz',
+};
+
+// Generate consistent color based on currency code
+const getColorForCurrency = (code: string) => {
+  const colors = [
+    'from-blue-400 to-blue-600',
+    'from-purple-400 to-purple-600',
+    'from-pink-400 to-pink-600',
+    'from-red-400 to-red-600',
+    'from-orange-400 to-orange-600',
+    'from-yellow-400 to-yellow-600',
+    'from-green-400 to-green-600',
+    'from-teal-400 to-teal-600',
+    'from-cyan-400 to-cyan-600',
+    'from-indigo-400 to-indigo-600',
+    'from-violet-400 to-violet-600',
+    'from-fuchsia-400 to-fuchsia-600',
+  ];
+  
+  // Generate a hash from the currency code
+  let hash = 0;
+  for (let i = 0; i < code.length; i++) {
+    hash = code.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  
+  return colors[Math.abs(hash) % colors.length];
+};
+
+// Circular flag component with real country flags
 const CircularFlag = ({ code, size = 'md' }: { code: string; size?: 'sm' | 'md' | 'lg' }) => {
-  const flagEmojis: { [key: string]: string } = {
-    USD: '🇺🇸', EUR: '🇪🇺', GBP: '🇬🇧', INR: '🇮🇳', JPY: '🇯🇵',
-    AUD: '🇦🇺', CAD: '🇨🇦', CHF: '🇨🇭', CNY: '🇨🇳', SGD: '🇸🇬',
-    AED: '🇦🇪', SAR: '🇸🇦', NZD: '🇳🇿', SEK: '🇸🇪', NOK: '🇳🇴',
-    MXN: '🇲🇽', BRL: '🇧🇷', ZAR: '🇿🇦', HKD: '🇭🇰', KRW: '🇰🇷',
-    THB: '🇹🇭', TRY: '🇹🇷', RUB: '🇷🇺', PLN: '🇵🇱', DKK: '🇩🇰',
-    IDR: '🇮🇩', MYR: '🇲🇾', PHP: '🇵🇭', ILS: '🇮🇱', CZK: '🇨🇿',
-    CLP: '🇨🇱', TWD: '🇹🇼', ARS: '🇦🇷', VND: '🇻🇳', EGP: '🇪🇬',
-    PKR: '🇵🇰', BDT: '🇧🇩', HUF: '🇭🇺', UAH: '🇺🇦', RON: '🇷🇴',
-    NGN: '🇳🇬', KES: '🇰🇪', QAR: '🇶🇦', OMR: '🇴🇲', KWD: '🇰🇼',
-    BHD: '🇧🇭', JOD: '🇯🇴', LKR: '🇱🇰',
-  };
-
-  const gradients: { [key: string]: string } = {
-    USD: 'bg-gradient-to-br from-blue-400 to-blue-600',
-    EUR: 'bg-gradient-to-br from-indigo-400 to-indigo-600',
-    GBP: 'bg-gradient-to-br from-red-400 to-red-600',
-    INR: 'bg-gradient-to-br from-orange-400 to-orange-600',
-    JPY: 'bg-gradient-to-br from-pink-400 to-pink-600',
-    AUD: 'bg-gradient-to-br from-green-400 to-green-600',
-    CAD: 'bg-gradient-to-br from-red-400 to-red-500',
-    CHF: 'bg-gradient-to-br from-red-500 to-red-700',
-    CNY: 'bg-gradient-to-br from-red-400 to-yellow-500',
-    SGD: 'bg-gradient-to-br from-red-400 to-red-600',
-    AED: 'bg-gradient-to-br from-green-500 to-green-700',
-    SAR: 'bg-gradient-to-br from-green-500 to-green-700',
-    NZD: 'bg-gradient-to-br from-blue-500 to-blue-700',
-    SEK: 'bg-gradient-to-br from-blue-400 to-blue-600',
-    NOK: 'bg-gradient-to-br from-red-500 to-blue-600',
-    MXN: 'bg-gradient-to-br from-green-500 to-red-600',
-    BRL: 'bg-gradient-to-br from-green-400 to-yellow-500',
-    ZAR: 'bg-gradient-to-br from-green-500 to-yellow-600',
-    HKD: 'bg-gradient-to-br from-red-500 to-red-700',
-    KRW: 'bg-gradient-to-br from-blue-400 to-red-500',
-    THB: 'bg-gradient-to-br from-red-500 to-blue-600',
-    TRY: 'bg-gradient-to-br from-red-500 to-red-700',
-    RUB: 'bg-gradient-to-br from-blue-500 to-red-600',
-    PLN: 'bg-gradient-to-br from-red-500 to-red-700',
-    DKK: 'bg-gradient-to-br from-red-500 to-red-700',
-    IDR: 'bg-gradient-to-br from-red-500 to-red-700',
-    MYR: 'bg-gradient-to-br from-blue-500 to-red-600',
-    PHP: 'bg-gradient-to-br from-blue-400 to-red-500',
-    ILS: 'bg-gradient-to-br from-blue-400 to-blue-600',
-    CZK: 'bg-gradient-to-br from-blue-500 to-red-600',
-    CLP: 'bg-gradient-to-br from-blue-500 to-red-600',
-    TWD: 'bg-gradient-to-br from-blue-500 to-red-600',
-    ARS: 'bg-gradient-to-br from-blue-400 to-blue-600',
-    VND: 'bg-gradient-to-br from-red-500 to-yellow-500',
-    EGP: 'bg-gradient-to-br from-red-500 to-yellow-600',
-    PKR: 'bg-gradient-to-br from-green-500 to-green-700',
-    BDT: 'bg-gradient-to-br from-green-500 to-red-600',
-    HUF: 'bg-gradient-to-br from-red-500 to-green-600',
-    UAH: 'bg-gradient-to-br from-blue-400 to-yellow-500',
-    RON: 'bg-gradient-to-br from-blue-500 to-yellow-600',
-    NGN: 'bg-gradient-to-br from-green-500 to-green-700',
-    KES: 'bg-gradient-to-br from-red-500 to-green-600',
-    QAR: 'bg-gradient-to-br from-purple-500 to-purple-700',
-    OMR: 'bg-gradient-to-br from-red-500 to-green-600',
-    KWD: 'bg-gradient-to-br from-green-500 to-red-600',
-    BHD: 'bg-gradient-to-br from-red-500 to-red-700',
-    JOD: 'bg-gradient-to-br from-red-500 to-green-600',
-    LKR: 'bg-gradient-to-br from-orange-500 to-orange-700',
-  };
-
-  const emoji = flagEmojis[code] || '💱';
-  const gradient = gradients[code] || 'bg-gradient-to-br from-gray-400 to-gray-600';
+  const countryCode = currencyToCountryCode[code]?.toLowerCase() || 'xx';
+  const flagUrl = `https://cdn.jsdelivr.net/gh/hampusborgos/country-flags@main/svg/${countryCode}.svg`;
+  const initials = code.substring(0, 2).toUpperCase();
+  const gradientColor = getColorForCurrency(code);
 
   const sizeClasses = {
-    sm: 'w-6 h-6 text-sm',
-    md: 'w-10 h-10 text-xl',
-    lg: 'w-12 h-12 text-2xl',
+    sm: 'w-6 h-6',
+    md: 'w-10 h-10',
+    lg: 'w-12 h-12',
+  };
+
+  const textSizeClasses = {
+    sm: 'text-xs',
+    md: 'text-sm',
+    lg: 'text-base',
   };
 
   return (
-    <div className={`${sizeClasses[size]} rounded-full ${gradient} flex items-center justify-center shadow-md`}>
-      {emoji}
+    <div className={`${sizeClasses[size]} rounded-full overflow-hidden shadow-md border-2 border-white flex-shrink-0`}>
+      <img 
+        src={flagUrl} 
+        alt={`${code} flag`}
+        className="w-full h-full object-cover"
+        onError={(e) => {
+          // Fallback to initials with random gradient color
+          e.currentTarget.style.display = 'none';
+          e.currentTarget.parentElement!.classList.add('bg-gradient-to-br', ...gradientColor.split(' '));
+          e.currentTarget.parentElement!.innerHTML = `<span class="text-white font-semibold ${textSizeClasses[size]} flex items-center justify-center w-full h-full">${initials}</span>`;
+        }}
+      />
     </div>
   );
 };
@@ -146,6 +142,7 @@ export default function App() {
   // Keyboard input support
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      // Don't interfere with input field typing
       if (document.activeElement?.tagName === 'INPUT') {
         return;
       }
@@ -166,6 +163,7 @@ export default function App() {
   }, [amount]);
 
   const fetchFavorites = async () => {
+    // Try localStorage first
     const stored = localStorage.getItem('currency_favorites');
     if (stored) {
       try {
@@ -173,11 +171,14 @@ export default function App() {
         if (Array.isArray(parsed)) {
           setFavorites(parsed);
           setUseLocalStorage(true);
-          return;
+          return; // Skip Supabase if we have localStorage data
         }
-      } catch (e) {}
+      } catch (e) {
+        // Silent fail - localStorage parse error
+      }
     }
 
+    // Try Supabase silently
     try {
       const { data, error } = await supabase
         .from('favorite_pairs')
@@ -185,6 +186,7 @@ export default function App() {
         .order('created_at', { ascending: true });
 
       if (error) {
+        // Supabase not available, use localStorage
         setTableExists(false);
         setUseLocalStorage(true);
         return;
@@ -194,12 +196,14 @@ export default function App() {
       setFavorites(data || []);
       setUseLocalStorage(false);
     } catch (error) {
+      // Supabase connection failed, use localStorage
       setTableExists(false);
       setUseLocalStorage(true);
     }
   };
 
   const fetchHistory = async () => {
+    // Try localStorage first
     const stored = localStorage.getItem('currency_history');
     if (stored) {
       try {
@@ -207,11 +211,14 @@ export default function App() {
         if (Array.isArray(parsed)) {
           setHistory(parsed);
           setUseLocalStorage(true);
-          return;
+          return; // Skip Supabase if we have localStorage data
         }
-      } catch (e) {}
+      } catch (e) {
+        // Silent fail - localStorage parse error
+      }
     }
 
+    // Try Supabase silently
     try {
       const { data, error } = await supabase
         .from('history_entries')
@@ -219,6 +226,7 @@ export default function App() {
         .order('timestamp', { ascending: false });
 
       if (error) {
+        // Supabase not available, use localStorage
         setTableExists(false);
         setUseLocalStorage(true);
         return;
@@ -228,6 +236,7 @@ export default function App() {
       setHistory(data || []);
       setUseLocalStorage(false);
     } catch (error) {
+      // Supabase connection failed, use localStorage
       setTableExists(false);
       setUseLocalStorage(true);
     }
@@ -242,6 +251,7 @@ export default function App() {
 
   const toggleFavorite = async () => {
     if (useLocalStorage) {
+      // Use localStorage
       if (isFavorite) {
         const updated = favorites.filter(
           (fav) => !(fav.from_currency === fromCurrency && fav.to_currency === toCurrency)
@@ -259,6 +269,7 @@ export default function App() {
         localStorage.setItem('currency_favorites', JSON.stringify(updated));
       }
     } else {
+      // Use Supabase
       if (isFavorite) {
         const favorite = favorites.find(
           (fav) => fav.from_currency === fromCurrency && fav.to_currency === toCurrency
@@ -275,6 +286,7 @@ export default function App() {
 
           if (error) {
             console.error('Error adding favorite to Supabase:', error);
+            // Fallback to localStorage
             setUseLocalStorage(true);
             const newFav: FavoritePair = {
               id: Date.now().toString(),
@@ -290,6 +302,7 @@ export default function App() {
           await fetchFavorites();
         } catch (error) {
           console.error('Error adding favorite:', error);
+          // Fallback to localStorage
           setUseLocalStorage(true);
           const newFav: FavoritePair = {
             id: Date.now().toString(),
@@ -306,10 +319,12 @@ export default function App() {
 
   const removeFavorite = async (id: string) => {
     if (useLocalStorage) {
+      // Use localStorage
       const updated = favorites.filter((fav) => fav.id !== id);
       setFavorites(updated);
       localStorage.setItem('currency_favorites', JSON.stringify(updated));
     } else {
+      // Use Supabase
       try {
         const { error } = await supabase
           .from('favorite_pairs')
@@ -344,28 +359,76 @@ export default function App() {
       if (data.result === 'success') {
         setExchangeRates(data.conversion_rates);
         
+        // Build currency list from the rates
         if (currencies.length === 0) {
           const currencyNames: { [key: string]: string } = {
-            USD: 'US Dollar', EUR: 'Euro', GBP: 'British Pound', INR: 'Indian Rupee',
-            JPY: 'Japanese Yen', AUD: 'Australian Dollar', CAD: 'Canadian Dollar',
-            CHF: 'Swiss Franc', CNY: 'Chinese Yuan', SGD: 'Singapore Dollar',
-            AED: 'UAE Dirham', SAR: 'Saudi Riyal', NZD: 'New Zealand Dollar',
-            SEK: 'Swedish Krona', NOK: 'Norwegian Krone', MXN: 'Mexican Peso',
-            BRL: 'Brazilian Real', ZAR: 'South African Rand', HKD: 'Hong Kong Dollar',
-            KRW: 'South Korean Won', THB: 'Thai Baht', TRY: 'Turkish Lira',
-            RUB: 'Russian Ruble', PLN: 'Polish Zloty', DKK: 'Danish Krone',
-            IDR: 'Indonesian Rupiah', MYR: 'Malaysian Ringgit', PHP: 'Philippine Peso',
-            ILS: 'Israeli Shekel', CZK: 'Czech Koruna', CLP: 'Chilean Peso',
-            TWD: 'Taiwan Dollar', ARS: 'Argentine Peso', VND: 'Vietnamese Dong',
-            EGP: 'Egyptian Pound', PKR: 'Pakistani Rupee', BDT: 'Bangladeshi Taka',
-            HUF: 'Hungarian Forint', UAH: 'Ukrainian Hryvnia', RON: 'Romanian Leu',
-            NGN: 'Nigerian Naira', KES: 'Kenyan Shilling', QAR: 'Qatari Riyal',
-            OMR: 'Omani Rial', KWD: 'Kuwaiti Dinar', BHD: 'Bahraini Dinar',
-            JOD: 'Jordanian Dinar', LKR: 'Sri Lankan Rupee',
+            USD: 'US Dollar',
+            EUR: 'Euro',
+            GBP: 'British Pound',
+            INR: 'Indian Rupee',
+            JPY: 'Japanese Yen',
+            AUD: 'Australian Dollar',
+            CAD: 'Canadian Dollar',
+            CHF: 'Swiss Franc',
+            CNY: 'Chinese Yuan',
+            SGD: 'Singapore Dollar',
+            AED: 'UAE Dirham',
+            SAR: 'Saudi Riyal',
+            NZD: 'New Zealand Dollar',
+            SEK: 'Swedish Krona',
+            NOK: 'Norwegian Krone',
+            MXN: 'Mexican Peso',
+            BRL: 'Brazilian Real',
+            ZAR: 'South African Rand',
+            HKD: 'Hong Kong Dollar',
+            KRW: 'South Korean Won',
+            THB: 'Thai Baht',
+            TRY: 'Turkish Lira',
+            RUB: 'Russian Ruble',
+            PLN: 'Polish Zloty',
+            DKK: 'Danish Krone',
+            IDR: 'Indonesian Rupiah',
+            MYR: 'Malaysian Ringgit',
+            PHP: 'Philippine Peso',
+            ILS: 'Israeli Shekel',
+            CZK: 'Czech Koruna',
+            CLP: 'Chilean Peso',
+            TWD: 'Taiwan Dollar',
+            ARS: 'Argentine Peso',
+            VND: 'Vietnamese Dong',
+            EGP: 'Egyptian Pound',
+            PKR: 'Pakistani Rupee',
+            BDT: 'Bangladeshi Taka',
+            HUF: 'Hungarian Forint',
+            UAH: 'Ukrainian Hryvnia',
+            RON: 'Romanian Leu',
+            NGN: 'Nigerian Naira',
+            KES: 'Kenyan Shilling',
+            QAR: 'Qatari Riyal',
+            OMR: 'Omani Rial',
+            KWD: 'Kuwaiti Dinar',
+            BHD: 'Bahraini Dinar',
+            JOD: 'Jordanian Dinar',
+            LKR: 'Sri Lankan Rupee',
+            ISK: 'Icelandic Krona',
+            HRK: 'Croatian Kuna',
+            BGN: 'Bulgarian Lev',
+            MAD: 'Moroccan Dirham',
+            TND: 'Tunisian Dinar',
+            JMD: 'Jamaican Dollar',
+            PEN: 'Peruvian Sol',
+            COP: 'Colombian Peso',
+            UYU: 'Uruguayan Peso',
+            GHS: 'Ghanaian Cedi',
+            DZD: 'Algerian Dinar',
+            KZT: 'Kazakhstani Tenge',
           };
           
           const currencyList = Object.keys(data.conversion_rates)
-            .map(code => ({ code, name: currencyNames[code] || code }))
+            .map(code => ({
+              code,
+              name: currencyNames[code] || code
+            }))
             .sort((a, b) => a.code.localeCompare(b.code));
           
           setCurrencies(currencyList);
@@ -397,6 +460,7 @@ export default function App() {
   };
 
   const formatAmountDisplay = (value: string) => {
+    // Don't format while typing (if it ends with a decimal point)
     if (value.endsWith('.')) return value;
     const parts = value.split('.');
     const integerPart = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
@@ -405,11 +469,16 @@ export default function App() {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const input = e.target.value;
+    // Remove all non-digit and non-decimal characters
     const cleaned = input.replace(/[^\d.]/g, '');
     
+    // Prevent multiple decimal points
     const parts = cleaned.split('.');
-    if (parts.length > 2) return;
+    if (parts.length > 2) {
+      return;
+    }
     
+    // Update amount with cleaned value
     if (cleaned === '' || cleaned === '.') {
       setAmount('0');
     } else {
@@ -495,217 +564,245 @@ export default function App() {
     return date.toLocaleDateString();
   };
 
-  return (
-    <div className="min-h-screen bg-gray-100 flex items-start justify-center p-4 sm:items-center">
-      <div className="w-full max-w-md bg-white rounded-3xl shadow-lg p-6 space-y-6 relative min-h-[600px] flex flex-col">
-        <div className="absolute top-6 right-6 flex gap-2">
-          <div className="relative">
-            <button
-              onClick={() => {
-                setShowHistory(!showHistory);
-                setShowFavorites(false);
-              }}
-              className="w-10 h-10 rounded-full bg-gray-50 hover:bg-gray-100 flex items-center justify-center transition-colors relative"
-              title="History"
-            >
-              <Clock className="w-5 h-5 text-gray-600" />
-              {history.length > 0 && (
-                <span className="absolute -top-1 -right-1 w-5 h-5 bg-blue-500 text-white text-xs rounded-full flex items-center justify-center">
-                  {history.length}
-                </span>
-              )}
-            </button>
+  const numberPadButtons = [
+    '1', '2', '3',
+    '4', '5', '6',
+    '7', '8', '9',
+    '.', '0', 'backspace'
+  ];
 
-            {showHistory && (
-              <div className="absolute top-12 right-0 w-80 bg-white rounded-2xl shadow-xl border border-gray-100 p-4 space-y-3 z-10">
-                <div className="flex items-center justify-between">
-                  <p className="text-sm text-gray-900">Conversion History</p>
-                  <button onClick={() => setShowHistory(false)}>
-                    <X className="w-4 h-4 text-gray-500" />
+  return (
+    <div className="min-h-screen bg-white flex items-start sm:items-center justify-center">
+      <div className="w-full max-w-md p-5 sm:p-6 space-y-6 relative flex flex-col">
+        {/* Header with Logo and Icons */}
+        <div className="flex items-center justify-between flex-shrink-0">
+          <h1 className="text-xl sm:text-2xl text-[rgb(26,0,155)] font-[ABeeZee] font-bold text-[32px]">Konvert</h1>
+          
+          {/* Top Right Icons */}
+          <div className="flex gap-2">
+            <div className="relative">
+              <button
+                onClick={() => {
+                  setShowHistory(!showHistory);
+                  setShowFavorites(false);
+                }}
+                className="w-9 h-9 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition-colors relative"
+                title="History"
+              >
+                <Clock className="w-4 h-4 text-gray-600" />
+                {history.length > 0 && (
+                  <span className="absolute -top-1 -right-1 w-4 h-4 bg-blue-500 text-white text-xs rounded-full flex items-center justify-center">
+                    {history.length}
+                  </span>
+                )}
+              </button>
+
+              {/* History Dropdown */}
+              {showHistory && (
+                <div className="absolute top-12 right-0 w-80 bg-white rounded-2xl shadow-xl border border-gray-100 p-4 space-y-3 z-10 max-h-[60vh] overflow-y-auto">
+                  <div className="flex items-center justify-between sticky top-0 bg-white pb-2">
+                    <p className="text-sm text-gray-900">Conversion History</p>
+                    <button onClick={() => setShowHistory(false)}>
+                      <X className="w-4 h-4 text-gray-500" />
+                    </button>
+                  </div>
+                  
+                  {history.length === 0 ? (
+                    <p className="text-sm text-gray-500 text-center py-4">
+                      No history yet. Save your first conversion!
+                    </p>
+                  ) : (
+                    <div className="space-y-2">
+                      {history.map((entry) => (
+                        <div
+                          key={entry.id}
+                          className="bg-gray-50 rounded-xl p-3 hover:bg-gray-100 transition-colors group space-y-1"
+                        >
+                          <div className="flex items-start justify-between">
+                            <button
+                              onClick={() => {
+                                loadHistoryEntry(entry);
+                                setShowHistory(false);
+                              }}
+                              className="flex-1 text-left"
+                            >
+                              <div className="flex items-baseline gap-2">
+                                <span className="text-gray-900">
+                                  {formatNumber(entry.from_amount)} {entry.from_currency}
+                                </span>
+                                <span className="text-gray-400">→</span>
+                                <span className="text-gray-900">
+                                  {formatNumber(entry.to_amount)} {entry.to_currency}
+                                </span>
+                              </div>
+                              {entry.description && (
+                                <p className="text-sm text-gray-600 mt-1">{entry.description}</p>
+                              )}
+                              <p className="text-xs text-gray-400 mt-1">{formatDate(entry.timestamp)}</p>
+                            </button>
+                            <button
+                              onClick={() => removeHistoryEntry(entry.id)}
+                              className="opacity-0 group-hover:opacity-100 transition-opacity ml-2"
+                            >
+                              <X className="w-4 h-4 text-gray-500 hover:text-red-500" />
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  
+                  <button
+                    onClick={() => {
+                      setShowSaveHistory(true);
+                      setShowHistory(false);
+                    }}
+                    className="w-full py-2 rounded-xl text-sm bg-blue-50 text-blue-600 hover:bg-blue-100 transition-colors sticky bottom-0 bg-white pt-2"
+                  >
+                    + Save Current Conversion
                   </button>
                 </div>
-                
-                {history.length === 0 ? (
-                  <p className="text-sm text-gray-500 text-center py-4">
-                    No history yet. Save your first conversion!
-                  </p>
-                ) : (
-                  <div className="space-y-2 max-h-96 overflow-y-auto">
-                    {history.map((entry) => (
-                      <div
-                        key={entry.id}
-                        className="bg-gray-50 rounded-xl p-3 hover:bg-gray-100 transition-colors group space-y-1"
-                      >
-                        <div className="flex items-start justify-between">
+              )}
+            </div>
+            <div className="relative">
+              <button
+                onClick={() => {
+                  setShowFavorites(!showFavorites);
+                  setShowHistory(false);
+                }}
+                className={`w-9 h-9 rounded-full flex items-center justify-center transition-all relative ${
+                  isFavorite 
+                    ? 'bg-yellow-400 text-white hover:bg-yellow-500' 
+                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                }`}
+                title="Favorites"
+              >
+                <Star className={`w-4 h-4 ${isFavorite ? 'fill-current' : ''}`} />
+                {favorites.length > 0 && (
+                  <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">
+                    {favorites.length}
+                  </span>
+                )}
+              </button>
+              
+              {/* Favorites Dropdown */}
+              {showFavorites && (
+                <div className="absolute top-12 right-0 w-64 bg-white rounded-2xl shadow-xl border border-gray-100 p-4 space-y-3 z-10">
+                  <div className="flex items-center justify-between">
+                    <p className="text-sm text-gray-900">Favorites</p>
+                    <button onClick={() => setShowFavorites(false)}>
+                      <X className="w-4 h-4 text-gray-500" />
+                    </button>
+                  </div>
+                  
+                  {favorites.length === 0 ? (
+                    <p className="text-sm text-gray-500 text-center py-4">
+                      No favorites yet. Click the star to save this pair!
+                    </p>
+                  ) : (
+                    <div className="space-y-2 max-h-64 overflow-y-auto">
+                      {favorites.map((pair) => (
+                        <div
+                          key={pair.id}
+                          className="flex items-center justify-between bg-gray-50 rounded-xl px-3 py-2 hover:bg-gray-100 transition-colors group"
+                        >
                           <button
                             onClick={() => {
-                              loadHistoryEntry(entry);
-                              setShowHistory(false);
+                              loadFavoritePair(pair);
+                              setShowFavorites(false);
                             }}
-                            className="flex-1 text-left"
+                            className="flex-1 text-left text-sm text-gray-900"
                           >
-                            <div className="flex items-baseline gap-2">
-                              <span className="text-gray-900">
-                                {formatNumber(entry.from_amount)} {entry.from_currency}
-                              </span>
-                              <span className="text-gray-400">→</span>
-                              <span className="text-gray-900">
-                                {formatNumber(entry.to_amount)} {entry.to_currency}
-                              </span>
-                            </div>
-                            {entry.description && (
-                              <p className="text-sm text-gray-600 mt-1">{entry.description}</p>
-                            )}
-                            <p className="text-xs text-gray-400 mt-1">{formatDate(entry.timestamp)}</p>
+                            {pair.from_currency} → {pair.to_currency}
                           </button>
                           <button
-                            onClick={() => removeHistoryEntry(entry.id)}
-                            className="opacity-0 group-hover:opacity-100 transition-opacity ml-2"
+                            onClick={() => removeFavorite(pair.id)}
+                            className="opacity-0 group-hover:opacity-100 transition-opacity"
                           >
                             <X className="w-4 h-4 text-gray-500 hover:text-red-500" />
                           </button>
                         </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-                
-                <button
-                  onClick={() => {
-                    setShowSaveHistory(true);
-                    setShowHistory(false);
-                  }}
-                  className="w-full py-2 rounded-xl text-sm bg-blue-50 text-blue-600 hover:bg-blue-100 transition-colors"
-                >
-                  + Save Current Conversion
-                </button>
-              </div>
-            )}
-          </div>
-          <div className="relative">
-            <button
-              onClick={() => {
-                setShowFavorites(!showFavorites);
-                setShowHistory(false);
-              }}
-              className={`w-10 h-10 rounded-full flex items-center justify-center transition-all relative ${
-                isFavorite 
-                  ? 'bg-yellow-400 text-white hover:bg-yellow-500' 
-                  : 'bg-gray-50 text-gray-600 hover:bg-gray-100'
-              }`}
-              title="Favorites"
-            >
-              <Star className={`w-5 h-5 ${isFavorite ? 'fill-current' : ''}`} />
-              {favorites.length > 0 && (
-                <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">
-                  {favorites.length}
-                </span>
-              )}
-            </button>
-            
-            {showFavorites && (
-              <div className="absolute top-12 right-0 w-64 bg-white rounded-2xl shadow-xl border border-gray-100 p-4 space-y-3 z-10">
-                <div className="flex items-center justify-between">
-                  <p className="text-sm text-gray-900">Favorites</p>
-                  <button onClick={() => setShowFavorites(false)}>
-                    <X className="w-4 h-4 text-gray-500" />
+                      ))}
+                    </div>
+                  )}
+                  
+                  <button
+                    onClick={() => {
+                      toggleFavorite();
+                    }}
+                    className={`w-full py-2 rounded-xl text-sm transition-colors ${
+                      isFavorite
+                        ? 'bg-red-50 text-red-600 hover:bg-red-100'
+                        : 'bg-yellow-50 text-yellow-600 hover:bg-yellow-100'
+                    }`}
+                  >
+                    {isFavorite ? '− Remove Current Pair' : '+ Add Current Pair'}
                   </button>
                 </div>
-                
-                {favorites.length === 0 ? (
-                  <p className="text-sm text-gray-500 text-center py-4">
-                    No favorites yet. Click the star to save this pair!
-                  </p>
-                ) : (
-                  <div className="space-y-2 max-h-64 overflow-y-auto">
-                    {favorites.map((pair) => (
-                      <div
-                        key={pair.id}
-                        className="flex items-center justify-between bg-gray-50 rounded-xl px-3 py-2 hover:bg-gray-100 transition-colors group"
-                      >
-                        <button
-                          onClick={() => {
-                            loadFavoritePair(pair);
-                            setShowFavorites(false);
-                          }}
-                          className="flex-1 text-left text-sm text-gray-900"
-                        >
-                          {pair.from_currency} → {pair.to_currency}
-                        </button>
-                        <button
-                          onClick={() => removeFavorite(pair.id)}
-                          className="opacity-0 group-hover:opacity-100 transition-opacity"
-                        >
-                          <X className="w-4 h-4 text-gray-500 hover:text-red-500" />
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                )}
-                
-                <button
-                  onClick={() => toggleFavorite()}
-                  className={`w-full py-2 rounded-xl text-sm transition-colors ${
-                    isFavorite
-                      ? 'bg-red-50 text-red-600 hover:bg-red-100'
-                      : 'bg-yellow-50 text-yellow-600 hover:bg-yellow-100'
-                  }`}
-                >
-                  {isFavorite ? '− Remove Current Pair' : '+ Add Current Pair'}
-                </button>
-              </div>
-            )}
+              )}
+            </div>
           </div>
         </div>
 
-        <div className="space-y-3">
-          <label className="text-sm text-gray-500">From</label>
-          <CurrencySelector
-            value={fromCurrency}
-            onChange={setFromCurrency}
-            currencies={currencies}
-          />
+        {/* From Currency Section */}
+        <div className="space-y-2 sm:space-y-4">
+          <div className="flex items-center justify-center gap-1">
+            <label className="text-sm text-gray-500">From</label>
+            <CurrencySelector
+              value={fromCurrency}
+              onChange={setFromCurrency}
+              currencies={currencies}
+            />
+          </div>
           <input
             type="text"
             value={formatAmountDisplay(amount)}
             onChange={handleInputChange}
-            className="w-full text-7xl outline-none text-gray-900 tracking-tight bg-transparent text-center py-8"
+            className="w-full text-4xl sm:text-5xl md:text-7xl outline-none text-gray-900 tracking-tight bg-transparent text-center py-2 sm:py-4 text-[48px]"
             placeholder="0"
           />
         </div>
 
-        <div className="flex items-center justify-center gap-3 py-4">
-          <button className="px-8 py-3 bg-gray-100 text-gray-600 rounded-full hover:bg-gray-200 transition-colors">
+        {/* Convert Button with Swap - Fixed at center */}
+        <div className="flex items-center justify-center gap-3 py-1 sm:py-2">
+          <button
+            className="px-6 sm:px-8 py-2 sm:py-3 bg-gray-100 text-gray-600 rounded-full hover:bg-gray-200 transition-colors text-sm sm:text-base"
+          >
             Convert
           </button>
           <button
             onClick={handleSwap}
-            className="w-12 h-12 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition-colors"
+            className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition-colors"
             title="Swap currencies"
           >
-            <ArrowDownUp className="w-5 h-5 text-gray-600" />
+            <ArrowDownUp className="w-4 h-4 sm:w-5 sm:h-5 text-gray-600" />
           </button>
         </div>
 
+        {/* Exchange Rate Info */}
         <div className="text-center">
-          <p className="text-sm text-gray-400">
+          <p className="text-xs sm:text-sm text-gray-400">
             1 {fromCurrency} = {currentRate()} {toCurrency}
           </p>
         </div>
 
-        <div className="space-y-3 flex-1">
-          <label className="text-sm text-gray-500">To</label>
-          <CurrencySelector
-            value={toCurrency}
-            onChange={setToCurrency}
-            currencies={currencies}
-          />
-          <div className="w-full text-7xl text-gray-900 tracking-tight text-center py-8">
+        {/* To Currency Section */}
+        <div className="space-y-2 sm:space-y-4 flex-1">
+          <div className="flex items-center justify-center gap-1">
+            <label className="text-sm text-gray-500">To</label>
+            <CurrencySelector
+              value={toCurrency}
+              onChange={setToCurrency}
+              currencies={currencies}
+            />
+          </div>
+          <div className="w-full text-4xl sm:text-5xl md:text-7xl text-gray-900 tracking-tight text-center py-2 sm:py-4 text-[48px]">
             {loading ? '...' : convertedAmount()}
           </div>
         </div>
       </div>
 
+      {/* Save History Modal */}
       {showSaveHistory && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50" onClick={() => setShowSaveHistory(false)}>
           <div className="bg-white rounded-2xl p-6 w-full max-w-sm space-y-4" onClick={(e) => e.stopPropagation()}>
@@ -754,7 +851,7 @@ export default function App() {
               </button>
               <button
                 onClick={() => saveToHistory(historyDescription)}
-                className="flex-1 py-3 rounded-xl bg-500 text-white hover:bg-blue-600 transition-colors"
+                className="flex-1 py-3 rounded-xl bg-blue-500 text-white hover:bg-blue-600 transition-colors"
               >
                 Save
               </button>
