@@ -12,77 +12,68 @@ interface CurrencySelectorProps {
   currencies: Currency[];
 }
 
+// Map currency codes to country codes for flags
+const currencyToCountryCode: { [key: string]: string } = {
+  USD: 'us', EUR: 'eu', GBP: 'gb', INR: 'in', JPY: 'jp',
+  AUD: 'au', CAD: 'ca', CHF: 'ch', CNY: 'cn', SGD: 'sg',
+  AED: 'ae', SAR: 'sa', NZD: 'nz', SEK: 'se', NOK: 'no',
+  MXN: 'mx', BRL: 'br', ZAR: 'za', HKD: 'hk', KRW: 'kr',
+  THB: 'th', TRY: 'tr', RUB: 'ru', PLN: 'pl', DKK: 'dk',
+  IDR: 'id', MYR: 'my', PHP: 'ph', ILS: 'il', CZK: 'cz',
+  CLP: 'cl', TWD: 'tw', ARS: 'ar', VND: 'vn', EGP: 'eg',
+  PKR: 'pk', BDT: 'bd', HUF: 'hu', UAH: 'ua', RON: 'ro',
+  NGN: 'ng', KES: 'ke', QAR: 'qa', OMR: 'om', KWD: 'kw',
+  BHD: 'bh', JOD: 'jo', LKR: 'lk', ISK: 'is', HRK: 'hr',
+  BGN: 'bg', MAD: 'ma', TND: 'tn', JMD: 'jm', PEN: 'pe',
+  COP: 'co', UYU: 'uy', GHS: 'gh', DZD: 'dz', KZT: 'kz',
+};
+
+// Generate consistent color based on currency code
+const getColorForCurrency = (code: string) => {
+  const colors = [
+    'from-blue-400 to-blue-600',
+    'from-purple-400 to-purple-600',
+    'from-pink-400 to-pink-600',
+    'from-red-400 to-red-600',
+    'from-orange-400 to-orange-600',
+    'from-yellow-400 to-yellow-600',
+    'from-green-400 to-green-600',
+    'from-teal-400 to-teal-600',
+    'from-cyan-400 to-cyan-600',
+    'from-indigo-400 to-indigo-600',
+    'from-violet-400 to-violet-600',
+    'from-fuchsia-400 to-fuchsia-600',
+  ];
+  
+  // Generate a hash from the currency code
+  let hash = 0;
+  for (let i = 0; i < code.length; i++) {
+    hash = code.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  
+  return colors[Math.abs(hash) % colors.length];
+};
+
+// Circular flag component with real country flags
 const CircularFlag = ({ code }: { code: string }) => {
-  const flagEmojis: { [key: string]: string } = {
-    USD: '🇺🇸', EUR: '🇪🇺', GBP: '🇬🇧', INR: '🇮🇳', JPY: '🇯🇵',
-    AUD: '🇦🇺', CAD: '🇨🇦', CHF: '🇨🇭', CNY: '🇨🇳', SGD: '🇸🇬',
-    AED: '🇦🇪', SAR: '🇸🇦', NZD: '🇳🇿', SEK: '🇸🇪', NOK: '🇳🇴',
-    MXN: '🇲🇽', BRL: '🇧🇷', ZAR: '🇿🇦', HKD: '🇭🇰', KRW: '🇰🇷',
-    THB: '🇹🇭', TRY: '🇹🇷', RUB: '🇷🇺', PLN: '🇵🇱', DKK: '🇩🇰',
-    IDR: '🇮🇩', MYR: '🇲🇾', PHP: '🇵🇭', ILS: '🇮🇱', CZK: '🇨🇿',
-    CLP: '🇨🇱', TWD: '🇹🇼', ARS: '🇦🇷', VND: '🇻🇳', EGP: '🇪🇬',
-    PKR: '🇵🇰', BDT: '🇧🇩', HUF: '🇭🇺', UAH: '🇺🇦', RON: '🇷🇴',
-    NGN: '🇳🇬', KES: '🇰🇪', QAR: '🇶🇦', OMR: '🇴🇲', KWD: '🇰🇼',
-    BHD: '🇧🇭', JOD: '🇯🇴', LKR: '🇱🇰',
-  };
-
-  const gradients: { [key: string]: string } = {
-    USD: 'bg-gradient-to-br from-blue-400 to-blue-600',
-    EUR: 'bg-gradient-to-br from-indigo-400 to-indigo-600',
-    GBP: 'bg-gradient-to-br from-red-400 to-red-600',
-    INR: 'bg-gradient-to-br from-orange-400 to-orange-600',
-    JPY: 'bg-gradient-to-br from-pink-400 to-pink-600',
-    AUD: 'bg-gradient-to-br from-green-400 to-green-600',
-    CAD: 'bg-gradient-to-br from-red-400 to-red-500',
-    CHF: 'bg-gradient-to-br from-red-500 to-red-700',
-    CNY: 'bg-gradient-to-br from-red-400 to-yellow-500',
-    SGD: 'bg-gradient-to-br from-red-400 to-red-600',
-    AED: 'bg-gradient-to-br from-green-500 to-green-700',
-    SAR: 'bg-gradient-to-br from-green-500 to-green-700',
-    NZD: 'bg-gradient-to-br from-blue-500 to-blue-700',
-    SEK: 'bg-gradient-to-br from-blue-400 to-blue-600',
-    NOK: 'bg-gradient-to-br from-red-500 to-blue-600',
-    MXN: 'bg-gradient-to-br from-green-500 to-red-600',
-    BRL: 'bg-gradient-to-br from-green-400 to-yellow-500',
-    ZAR: 'bg-gradient-to-br from-green-500 to-yellow-600',
-    HKD: 'bg-gradient-to-br from-red-500 to-red-700',
-    KRW: 'bg-gradient-to-br from-blue-400 to-red-500',
-    THB: 'bg-gradient-to-br from-red-500 to-blue-600',
-    TRY: 'bg-gradient-to-br from-red-500 to-red-700',
-    RUB: 'bg-gradient-to-br from-blue-500 to-red-600',
-    PLN: 'bg-gradient-to-br from-red-500 to-red-700',
-    DKK: 'bg-gradient-to-br from-red-500 to-red-700',
-    IDR: 'bg-gradient-to-br from-red-500 to-red-700',
-    MYR: 'bg-gradient-to-br from-blue-500 to-red-600',
-    PHP: 'bg-gradient-to-br from-blue-400 to-red-500',
-    ILS: 'bg-gradient-to-br from-blue-400 to-blue-600',
-    CZK: 'bg-gradient-to-br from-blue-500 to-red-600',
-    CLP: 'bg-gradient-to-br from-blue-500 to-red-600',
-    TWD: 'bg-gradient-to-br from-blue-500 to-red-600',
-    ARS: 'bg-gradient-to-br from-blue-400 to-blue-600',
-    VND: 'bg-gradient-to-br from-red-500 to-yellow-500',
-    EGP: 'bg-gradient-to-br from-red-500 to-yellow-600',
-    PKR: 'bg-gradient-to-br from-green-500 to-green-700',
-    BDT: 'bg-gradient-to-br from-green-500 to-red-600',
-    HUF: 'bg-gradient-to-br from-red-500 to-green-600',
-    UAH: 'bg-gradient-to-br from-blue-400 to-yellow-500',
-    RON: 'bg-gradient-to-br from-blue-500 to-yellow-600',
-    NGN: 'bg-gradient-to-br from-green-500 to-green-700',
-    KES: 'bg-gradient-to-br from-red-500 to-green-600',
-    QAR: 'bg-gradient-to-br from-purple-500 to-purple-700',
-    OMR: 'bg-gradient-to-br from-red-500 to-green-600',
-    KWD: 'bg-gradient-to-br from-green-500 to-red-600',
-    BHD: 'bg-gradient-to-br from-red-500 to-red-700',
-    JOD: 'bg-gradient-to-br from-red-500 to-green-600',
-    LKR: 'bg-gradient-to-br from-orange-500 to-orange-700',
-  };
-
-  const emoji = flagEmojis[code] || '💱';
-  const gradient = gradients[code] || 'bg-gradient-to-br from-gray-400 to-gray-600';
+  const countryCode = currencyToCountryCode[code]?.toLowerCase() || 'xx';
+  const flagUrl = `https://cdn.jsdelivr.net/gh/hampusborgos/country-flags@main/svg/${countryCode}.svg`;
+  const initials = code.substring(0, 2).toUpperCase();
+  const gradientColor = getColorForCurrency(code);
 
   return (
-    <div className={`w-10 h-10 rounded-full ${gradient} flex items-center justify-center text-xl shadow-md`}>
-      {emoji}
+    <div className="w-10 h-10 rounded-full overflow-hidden shadow-md border-2 border-white flex-shrink-0">
+      <img 
+        src={flagUrl} 
+        alt={`${code} flag`}
+        className="w-full h-full object-cover"
+        onError={(e) => {
+          // Fallback to initials with random gradient color
+          e.currentTarget.style.display = 'none';
+          e.currentTarget.parentElement!.classList.add('bg-gradient-to-br', ...gradientColor.split(' '));
+          e.currentTarget.parentElement!.innerHTML = `<span class="text-white font-semibold text-sm flex items-center justify-center w-full h-full">${initials}</span>`;
+        }}
+      />
     </div>
   );
 };
@@ -108,12 +99,14 @@ export function CurrencySelector({ value, onChange, currencies }: CurrencySelect
       currency.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  const selectedCurrency = currencies.find((c) => c.code === value);
+
   return (
     <>
       <div className="flex justify-center">
         <button
           onClick={() => setIsOpen(true)}
-          className="flex items-center gap-3 px-5 py-2.5 bg-gray-50 rounded-full hover:bg-gray-100 transition-colors"
+          className="flex items-center gap-2 px-5 py-2.5 bg-gray-50 rounded-full hover:bg-gray-100 transition-colors"
         >
           <CircularFlag code={value} />
           <span className="text-lg text-gray-900">{value}</span>
@@ -121,6 +114,7 @@ export function CurrencySelector({ value, onChange, currencies }: CurrencySelect
         </button>
       </div>
 
+      {/* Bottom Sheet Modal */}
       {isOpen && (
         <div 
           className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 backdrop-blur-sm"
@@ -133,6 +127,7 @@ export function CurrencySelector({ value, onChange, currencies }: CurrencySelect
             className="w-full max-w-lg bg-white rounded-t-3xl max-h-[85vh] flex flex-col animate-slide-up"
             onClick={(e) => e.stopPropagation()}
           >
+            {/* Header */}
             <div className="flex items-center justify-between p-6 border-b border-gray-100">
               <h3 className="text-xl text-gray-900">Select Currency</h3>
               <button 
@@ -146,6 +141,7 @@ export function CurrencySelector({ value, onChange, currencies }: CurrencySelect
               </button>
             </div>
 
+            {/* Search Input */}
             <div className="p-4 border-b border-gray-100">
               <input
                 type="text"
@@ -157,6 +153,7 @@ export function CurrencySelector({ value, onChange, currencies }: CurrencySelect
               />
             </div>
 
+            {/* Currency List */}
             <div className="overflow-y-auto flex-1">
               {filteredCurrencies.map((currency) => (
                 <button
