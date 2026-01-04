@@ -831,8 +831,25 @@ export default function App() {
   };
 
   const handleInputFocus = (e: React.FocusEvent<HTMLInputElement>) => {
-    // Page scroll is disabled via CSS, so no need to prevent scroll here
-    // Just mark keyboard as visible
+    // Prevent browser from scrolling page when keyboard opens
+    // Lock scroll position immediately
+    const currentScroll = window.scrollY || document.documentElement.scrollTop;
+    
+    // Prevent any scroll
+    const lockScroll = () => {
+      window.scrollTo(0, currentScroll);
+      document.documentElement.scrollTop = currentScroll;
+      document.body.scrollTop = currentScroll;
+    };
+    
+    // Lock immediately and keep locking to prevent browser scroll
+    lockScroll();
+    requestAnimationFrame(lockScroll);
+    setTimeout(lockScroll, 0);
+    setTimeout(lockScroll, 10);
+    setTimeout(lockScroll, 50);
+    setTimeout(lockScroll, 100);
+    
     setIsKeyboardVisible(true);
   };
 
@@ -1138,7 +1155,7 @@ export default function App() {
   ];
 
   return (
-    <div className="h-full w-full bg-white flex items-start justify-center p-5 overflow-y-auto">
+    <div className="h-screen w-full bg-white flex items-start justify-center p-5 overflow-y-auto" style={{ height: '100vh', height: '100dvh' }}>
       <div className="w-full max-w-md space-y-4 relative flex flex-col items-start" style={{ height: '100%' }}>
         {/* Header with Logo and Icons */}
         <div className="flex items-center justify-between flex-shrink-0 h-[44.794px] w-full">
