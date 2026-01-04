@@ -13,12 +13,15 @@ html {
   padding: 0;
   width: 100%;
   height: 100%;
-  /* Prevent page from scrolling when keyboard opens */
   position: fixed;
   overflow: hidden;
-  /* Lock viewport height to prevent keyboard from shifting content */
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
   height: 100vh;
-  height: 100dvh; /* Use dynamic viewport height */
+  height: 100dvh;
+  scroll-behavior: auto !important;
 }
 
 body {
@@ -26,9 +29,12 @@ body {
   padding: 0;
   width: 100%;
   height: 100%;
-  /* Prevent body scroll */
   position: fixed;
   overflow: hidden;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
     'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
     sans-serif;
@@ -37,9 +43,9 @@ body {
   overscroll-behavior: none;
   -webkit-overflow-scrolling: touch;
   touch-action: pan-y;
-  /* Lock viewport to prevent keyboard from moving content */
   height: 100vh;
   height: 100dvh;
+  scroll-behavior: auto !important;
 }
 
 #root {
@@ -48,26 +54,17 @@ body {
   overflow-y: auto;
   overflow-x: hidden;
   -webkit-overflow-scrolling: touch;
-  position: relative;
-  /* Use visual viewport height when available */
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
   height: 100vh;
   height: 100dvh;
-  /* Prevent animations during keyboard open */
-  will-change: auto;
-  transform: translateZ(0); /* Force hardware acceleration */
-}
-
-/* Prevent scroll animations and transitions */
-html {
   scroll-behavior: auto !important;
-}
-
-body {
-  scroll-behavior: auto !important;
-}
-
-#root {
-  scroll-behavior: auto !important;
+  /* Prevent any transform that might cause animation */
+  transform: translate3d(0, 0, 0);
+  will-change: transform;
 }
 
 /* Prevent any transform animations on main container */
@@ -93,4 +90,3 @@ button {
   user-select: none;
   -webkit-user-select: none;
 }
-

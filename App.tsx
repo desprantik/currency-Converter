@@ -293,7 +293,6 @@ export default function App() {
     };
 
     const handleFocusOut = () => {
-      // Small delay to ensure keyboard is dismissed
       setTimeout(() => {
         setIsKeyboardVisible(false);
       }, 100);
@@ -303,7 +302,6 @@ export default function App() {
       if (window.visualViewport) {
         const viewportHeight = window.visualViewport.height;
         const windowHeight = window.innerHeight;
-        // If viewport is significantly smaller, keyboard is likely visible
         setIsKeyboardVisible(viewportHeight < windowHeight * 0.75);
       }
     };
@@ -831,40 +829,25 @@ export default function App() {
   };
 
   const handleInputFocus = (e: React.FocusEvent<HTMLInputElement>) => {
-    // Prevent browser from scrolling or animating page when keyboard opens
-    // Lock scroll position immediately and prevent any scrollIntoView behavior
-    const currentScroll = window.scrollY || document.documentElement.scrollTop || document.body.scrollTop;
+    // Completely disable scrollIntoView to prevent scroll animation
+    const input = e.target;
+    input.scrollIntoView = () => {};
     
-    // Disable scrollIntoView behavior
-    e.target.scrollIntoView = () => {}; // Override to do nothing
-    
-    // Prevent any scroll or animation
+    // Lock scroll position immediately and continuously
     const lockScroll = () => {
-      // Use instant scroll to prevent animation
-      window.scrollTo({ top: currentScroll, left: 0, behavior: 'instant' });
-      document.documentElement.scrollTop = currentScroll;
-      document.body.scrollTop = currentScroll;
-      
-      // Also prevent any transform or translate that might cause animation
+      window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+      document.documentElement.scrollTop = 0;
+      document.body.scrollTop = 0;
       const root = document.getElementById('root');
-      if (root) {
-        root.style.transform = 'translateY(0)';
-        root.style.transition = 'none';
-      }
+      if (root) root.scrollTop = 0;
     };
     
-    // Lock immediately and aggressively to prevent any animation
+    // Lock immediately
     lockScroll();
-    requestAnimationFrame(lockScroll);
-    requestAnimationFrame(() => requestAnimationFrame(lockScroll));
-    setTimeout(lockScroll, 0);
-    setTimeout(lockScroll, 1);
-    setTimeout(lockScroll, 5);
-    setTimeout(lockScroll, 10);
-    setTimeout(lockScroll, 20);
-    setTimeout(lockScroll, 50);
-    setTimeout(lockScroll, 100);
-    setTimeout(lockScroll, 200);
+    
+    // Lock continuously for first 500ms when keyboard opens
+    const lockInterval = setInterval(lockScroll, 5);
+    setTimeout(() => clearInterval(lockInterval), 500);
     
     setIsKeyboardVisible(true);
   };
