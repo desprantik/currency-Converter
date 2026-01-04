@@ -164,7 +164,7 @@ export default function App() {
 
   const fetchFavorites = async () => {
     try {
-      const response = await fetch(`${SERVER_URL}/make-server-913e994f/favorites`, {
+      const response = await fetch(`${SERVER_URL}/favorites`, {
         headers: {
           'Authorization': `Bearer ${publicAnonKey}`,
         },
@@ -185,7 +185,7 @@ export default function App() {
 
   const fetchHistory = async () => {
     try {
-      const response = await fetch(`${SERVER_URL}/make-server-913e994f/history`, {
+      const response = await fetch(`${SERVER_URL}/history`, {
         headers: {
           'Authorization': `Bearer ${publicAnonKey}`,
         },
@@ -221,7 +221,7 @@ export default function App() {
       }
     } else {
       try {
-        const response = await fetch(`${SERVER_URL}/make-server-913e994f/favorites`, {
+        const response = await fetch(`${SERVER_URL}/favorites`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -248,7 +248,7 @@ export default function App() {
 
   const removeFavorite = async (id: string) => {
     try {
-      const response = await fetch(`${SERVER_URL}/make-server-913e994f/favorites/${id}`, {
+      const response = await fetch(`${SERVER_URL}/favorites/${id}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${publicAnonKey}`,
@@ -454,11 +454,11 @@ export default function App() {
     };
 
     console.log('☁️ Saving to Supabase...');
-    console.log('URL:', `${SERVER_URL}/make-server-913e994f/history`);
+    console.log('URL:', `${SERVER_URL}/history`);
     console.log('Payload:', payload);
 
     try {
-      const response = await fetch(`${SERVER_URL}/make-server-913e994f/history`, {
+      const response = await fetch(`${SERVER_URL}/history`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -517,7 +517,7 @@ export default function App() {
 
   const removeHistoryEntry = async (id: string) => {
     try {
-      const response = await fetch(`${SERVER_URL}/make-server-913e994f/history/${id}`, {
+      const response = await fetch(`${SERVER_URL}/history/${id}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${publicAnonKey}`,

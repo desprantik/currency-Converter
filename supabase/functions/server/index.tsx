@@ -34,12 +34,12 @@ app.use(
 );
 
 // Health check endpoint
-app.get("/make-server-913e994f/health", (c) => {
+app.get("/health", (c) => {
   return c.json({ status: "ok" });
 });
 
 // Get all favorites
-app.get("/make-server-913e994f/favorites", async (c) => {
+app.get("/favorites", async (c) => {
   try {
     const { data, error } = await supabase
       .from('favorite_pairs')
@@ -59,7 +59,7 @@ app.get("/make-server-913e994f/favorites", async (c) => {
 });
 
 // Add a favorite
-app.post("/make-server-913e994f/favorites", async (c) => {
+app.post("/favorites", async (c) => {
   try {
     const body = await c.req.json();
     const { from_currency, to_currency } = body;
@@ -82,7 +82,7 @@ app.post("/make-server-913e994f/favorites", async (c) => {
 });
 
 // Delete a favorite
-app.delete("/make-server-913e994f/favorites/:id", async (c) => {
+app.delete("/favorites/:id", async (c) => {
   try {
     const id = c.req.param('id');
 
@@ -104,7 +104,7 @@ app.delete("/make-server-913e994f/favorites/:id", async (c) => {
 });
 
 // Get all history
-app.get("/make-server-913e994f/history", async (c) => {
+app.get("/history", async (c) => {
   try {
     const { data, error } = await supabase
       .from('conversion_history')
@@ -124,7 +124,7 @@ app.get("/make-server-913e994f/history", async (c) => {
 });
 
 // Add a history entry
-app.post("/make-server-913e994f/history", async (c) => {
+app.post("/history", async (c) => {
   try {
     const body = await c.req.json();
     console.log('Received request body:', body);
@@ -188,7 +188,7 @@ app.post("/make-server-913e994f/history", async (c) => {
 });
 
 // Delete a history entry
-app.delete("/make-server-913e994f/history/:id", async (c) => {
+app.delete("/history/:id", async (c) => {
   try {
     const id = c.req.param('id');
 
@@ -217,13 +217,13 @@ app.notFound((c) => {
     path: c.req.path,
     method: c.req.method,
     availableRoutes: [
-      'GET /make-server-913e994f/health',
-      'GET /make-server-913e994f/favorites',
-      'POST /make-server-913e994f/favorites',
-      'DELETE /make-server-913e994f/favorites/:id',
-      'GET /make-server-913e994f/history',
-      'POST /make-server-913e994f/history',
-      'DELETE /make-server-913e994f/history/:id'
+      'GET /health',
+      'GET /favorites',
+      'POST /favorites',
+      'DELETE /favorites/:id',
+      'GET /history',
+      'POST /history',
+      'DELETE /history/:id'
     ]
   }, 404);
 });
