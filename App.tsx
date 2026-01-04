@@ -568,8 +568,8 @@ export default function App() {
   ];
 
   return (
-    <div className="min-h-screen bg-white flex items-center justify-center px-4 py-6 sm:py-8">
-      <div className="w-full max-w-md space-y-4 sm:space-y-6 relative flex flex-col">
+    <div className="min-h-screen bg-white flex items-start sm:items-center justify-center px-4 py-4 sm:py-6 md:py-8">
+      <div className="w-full max-w-md space-y-4 sm:space-y-6 relative flex flex-col pt-4 sm:pt-0">
         {/* Header with Logo and Icons */}
         <div className="flex items-center justify-between flex-shrink-0 px-2">
           <h1 className="text-2xl sm:text-3xl text-[rgb(26,0,155)] font-[ABeeZee] font-bold">Konvert</h1>
@@ -765,7 +765,7 @@ export default function App() {
         {/* Convert Button with Swap - Fixed at center */}
         <div className="flex items-center justify-center gap-3 py-2 sm:py-3">
           <button
-            className="px-5 sm:px-6 md:px-8 py-2 sm:py-2.5 md:py-3 bg-gray-100 text-gray-600 rounded-full hover:bg-gray-200 active:bg-gray-300 transition-colors text-sm sm:text-base"
+            className="px-5 sm:px-6 md:px-8 py-2 sm:py-2.5 md:py-3 bg-gray-100 text-gray-600 rounded-full hover:bg-gray-200 active:bg-gray-300 transition-colors text-sm sm:text-base font-['Roboto'] font-thin"
           >
             Convert
           </button>
