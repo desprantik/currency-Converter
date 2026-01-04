@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ArrowDownUp, ChevronDown, Delete, Star, X, Clock } from 'lucide-react';
 import { CurrencySelector } from './components/CurrencySelector';
 import { projectId, publicAnonKey } from './utils/supabase/info';
