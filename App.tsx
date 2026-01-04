@@ -568,11 +568,11 @@ export default function App() {
   ];
 
   return (
-    <div className="min-h-screen bg-white flex items-start sm:items-center justify-center">
-      <div className="w-full max-w-md p-5 sm:p-6 space-y-6 relative flex flex-col">
+    <div className="min-h-screen bg-white flex items-center justify-center px-4 py-6 sm:py-8">
+      <div className="w-full max-w-md space-y-4 sm:space-y-6 relative flex flex-col">
         {/* Header with Logo and Icons */}
-        <div className="flex items-center justify-between flex-shrink-0">
-          <h1 className="text-xl sm:text-2xl text-[rgb(26,0,155)] font-[ABeeZee] font-bold text-[32px]">Konvert</h1>
+        <div className="flex items-center justify-between flex-shrink-0 px-2">
+          <h1 className="text-2xl sm:text-3xl text-[rgb(26,0,155)] font-[ABeeZee] font-bold">Konvert</h1>
           
           {/* Top Right Icons */}
           <div className="flex gap-2">
@@ -595,7 +595,7 @@ export default function App() {
 
               {/* History Dropdown */}
               {showHistory && (
-                <div className="absolute top-12 right-0 w-80 bg-white rounded-2xl shadow-xl border border-gray-100 p-4 space-y-3 z-10 max-h-[60vh] overflow-y-auto">
+                <div className="fixed sm:absolute top-0 sm:top-12 left-0 sm:left-auto right-0 sm:right-0 w-full sm:w-80 max-w-sm sm:max-w-none mx-auto bg-white rounded-t-2xl sm:rounded-2xl shadow-xl border border-gray-100 p-4 space-y-3 z-50 max-h-[70vh] sm:max-h-[60vh] overflow-y-auto">
                   <div className="flex items-center justify-between sticky top-0 bg-white pb-2">
                     <p className="text-sm text-gray-900">Conversion History</p>
                     <button onClick={() => setShowHistory(false)}>
@@ -685,7 +685,7 @@ export default function App() {
               
               {/* Favorites Dropdown */}
               {showFavorites && (
-                <div className="absolute top-12 right-0 w-64 bg-white rounded-2xl shadow-xl border border-gray-100 p-4 space-y-3 z-10">
+                <div className="fixed sm:absolute top-0 sm:top-12 left-0 sm:left-auto right-0 sm:right-0 w-full sm:w-64 max-w-xs sm:max-w-none mx-auto bg-white rounded-t-2xl sm:rounded-2xl shadow-xl border border-gray-100 p-4 space-y-3 z-50 max-h-[70vh] sm:max-h-[60vh] overflow-y-auto">
                   <div className="flex items-center justify-between">
                     <p className="text-sm text-gray-900">Favorites</p>
                     <button onClick={() => setShowFavorites(false)}>
@@ -743,9 +743,9 @@ export default function App() {
         </div>
 
         {/* From Currency Section */}
-        <div className="space-y-2 sm:space-y-4">
+        <div className="space-y-3 sm:space-y-4">
           <div className="flex items-center justify-center gap-1">
-            <label className="text-sm text-gray-500">From</label>
+            <label className="text-xs sm:text-sm text-gray-500">From</label>
             <CurrencySelector
               value={fromCurrency}
               onChange={setFromCurrency}
@@ -756,21 +756,22 @@ export default function App() {
             type="text"
             value={formatAmountDisplay(amount)}
             onChange={handleInputChange}
-            className="w-full text-4xl sm:text-5xl md:text-7xl outline-none text-gray-900 tracking-tight bg-transparent text-center py-2 sm:py-4 text-[48px]"
+            className="w-full text-3xl sm:text-4xl md:text-5xl lg:text-6xl outline-none text-gray-900 tracking-tight bg-transparent text-center py-2 sm:py-3 md:py-4"
             placeholder="0"
+            style={{ fontSize: 'clamp(2rem, 8vw, 4rem)' }}
           />
         </div>
 
         {/* Convert Button with Swap - Fixed at center */}
-        <div className="flex items-center justify-center gap-3 py-1 sm:py-2">
+        <div className="flex items-center justify-center gap-3 py-2 sm:py-3">
           <button
-            className="px-6 sm:px-8 py-2 sm:py-3 bg-gray-100 text-gray-600 rounded-full hover:bg-gray-200 transition-colors text-sm sm:text-base"
+            className="px-5 sm:px-6 md:px-8 py-2 sm:py-2.5 md:py-3 bg-gray-100 text-gray-600 rounded-full hover:bg-gray-200 active:bg-gray-300 transition-colors text-sm sm:text-base"
           >
             Convert
           </button>
           <button
             onClick={handleSwap}
-            className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition-colors"
+            className="w-10 h-10 sm:w-11 sm:h-11 md:w-12 md:h-12 rounded-full bg-gray-100 hover:bg-gray-200 active:bg-gray-300 flex items-center justify-center transition-colors touch-manipulation"
             title="Swap currencies"
           >
             <ArrowDownUp className="w-4 h-4 sm:w-5 sm:h-5 text-gray-600" />
@@ -785,16 +786,16 @@ export default function App() {
         </div>
 
         {/* To Currency Section */}
-        <div className="space-y-2 sm:space-y-4 flex-1">
+        <div className="space-y-3 sm:space-y-4 flex-1">
           <div className="flex items-center justify-center gap-1">
-            <label className="text-sm text-gray-500">To</label>
+            <label className="text-xs sm:text-sm text-gray-500">To</label>
             <CurrencySelector
               value={toCurrency}
               onChange={setToCurrency}
               currencies={currencies}
             />
           </div>
-          <div className="w-full text-4xl sm:text-5xl md:text-7xl text-gray-900 tracking-tight text-center py-2 sm:py-4 text-[48px]">
+          <div className="w-full text-3xl sm:text-4xl md:text-5xl lg:text-6xl text-gray-900 tracking-tight text-center py-2 sm:py-3 md:py-4" style={{ fontSize: 'clamp(2rem, 8vw, 4rem)' }}>
             {loading ? '...' : convertedAmount()}
           </div>
         </div>
@@ -802,8 +803,8 @@ export default function App() {
 
       {/* Save History Modal */}
       {showSaveHistory && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50" onClick={() => setShowSaveHistory(false)}>
-          <div className="bg-white rounded-2xl p-6 w-full max-w-sm space-y-4" onClick={(e) => e.stopPropagation()}>
+        <div className="fixed inset-0 bg-black/50 flex items-end sm:items-center justify-center p-0 sm:p-4 z-50" onClick={() => setShowSaveHistory(false)}>
+          <div className="bg-white rounded-t-3xl sm:rounded-2xl p-5 sm:p-6 w-full max-w-sm space-y-4 max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between">
               <h3 className="text-gray-900">Save Conversion</h3>
               <button onClick={() => setShowSaveHistory(false)}>
