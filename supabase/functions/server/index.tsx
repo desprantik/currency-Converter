@@ -209,4 +209,33 @@ app.delete("/make-server-913e994f/history/:id", async (c) => {
   }
 });
 
+// Catch-all 404 handler
+app.notFound((c) => {
+  console.error('404 - Route not found:', c.req.path, c.req.method);
+  return c.json({ 
+    error: 'Route not found', 
+    path: c.req.path,
+    method: c.req.method,
+    availableRoutes: [
+      'GET /make-server-913e994f/health',
+      'GET /make-server-913e994f/favorites',
+      'POST /make-server-913e994f/favorites',
+      'DELETE /make-server-913e994f/favorites/:id',
+      'GET /make-server-913e994f/history',
+      'POST /make-server-913e994f/history',
+      'DELETE /make-server-913e994f/history/:id'
+    ]
+  }, 404);
+});
+
+// Error handler
+app.onError((err, c) => {
+  console.error('Unhandled error:', err);
+  return c.json({ 
+    error: 'Internal server error', 
+    message: err.message,
+    stack: err.stack 
+  }, 500);
+});
+
 Deno.serve(app.fetch);

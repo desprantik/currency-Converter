@@ -469,11 +469,38 @@ export default function App() {
 
       console.log('Response status:', response.status);
       console.log('Response ok:', response.ok);
+      console.log('Response headers:', Object.fromEntries(response.headers.entries()));
 
       if (!response.ok) {
-        const error = await response.json();
+        // Try to parse as JSON, but handle non-JSON responses
+        const contentType = response.headers.get('content-type');
+        let error;
+        
+        if (contentType && contentType.includes('application/json')) {
+          try {
+            error = await response.json();
+          } catch (e) {
+            const text = await response.text();
+            console.error('Failed to parse error response as JSON:', text);
+            error = { error: `Server error (${response.status}): ${text.substring(0, 100)}` };
+          }
+        } else {
+          const text = await response.text();
+          console.error('Non-JSON error response:', text);
+          error = { error: `Server error (${response.status}): ${text.substring(0, 100)}` };
+        }
+        
         console.error('❌ Error saving history:', error);
-        alert(`Failed to save: ${error.error || error.message || 'Unknown error'}`);
+        alert(`Failed to save: ${error.error || error.message || `HTTP ${response.status}`}`);
+        return;
+      }
+
+      // Parse successful response
+      const contentType = response.headers.get('content-type');
+      if (!contentType || !contentType.includes('application/json')) {
+        const text = await response.text();
+        console.error('Unexpected non-JSON response:', text);
+        alert('Server returned unexpected response format');
         return;
       }
 
