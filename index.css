@@ -52,6 +52,34 @@ body {
   /* Use visual viewport height when available */
   height: 100vh;
   height: 100dvh;
+  /* Prevent animations during keyboard open */
+  will-change: auto;
+  transform: translateZ(0); /* Force hardware acceleration */
+}
+
+/* Prevent scroll animations and transitions */
+html {
+  scroll-behavior: auto !important;
+}
+
+body {
+  scroll-behavior: auto !important;
+}
+
+#root {
+  scroll-behavior: auto !important;
+}
+
+/* Prevent any transform animations on main container */
+#root > div {
+  transition: none !important;
+  transform: none !important;
+}
+
+/* Prevent input focus from causing page animations */
+input:focus {
+  scroll-margin: 0 !important;
+  scroll-padding: 0 !important;
 }
 
 /* Improve touch targets on mobile */

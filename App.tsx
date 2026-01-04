@@ -831,24 +831,40 @@ export default function App() {
   };
 
   const handleInputFocus = (e: React.FocusEvent<HTMLInputElement>) => {
-    // Prevent browser from scrolling page when keyboard opens
-    // Lock scroll position immediately
-    const currentScroll = window.scrollY || document.documentElement.scrollTop;
+    // Prevent browser from scrolling or animating page when keyboard opens
+    // Lock scroll position immediately and prevent any scrollIntoView behavior
+    const currentScroll = window.scrollY || document.documentElement.scrollTop || document.body.scrollTop;
     
-    // Prevent any scroll
+    // Disable scrollIntoView behavior
+    e.target.scrollIntoView = () => {}; // Override to do nothing
+    
+    // Prevent any scroll or animation
     const lockScroll = () => {
-      window.scrollTo(0, currentScroll);
+      // Use instant scroll to prevent animation
+      window.scrollTo({ top: currentScroll, left: 0, behavior: 'instant' });
       document.documentElement.scrollTop = currentScroll;
       document.body.scrollTop = currentScroll;
+      
+      // Also prevent any transform or translate that might cause animation
+      const root = document.getElementById('root');
+      if (root) {
+        root.style.transform = 'translateY(0)';
+        root.style.transition = 'none';
+      }
     };
     
-    // Lock immediately and keep locking to prevent browser scroll
+    // Lock immediately and aggressively to prevent any animation
     lockScroll();
     requestAnimationFrame(lockScroll);
+    requestAnimationFrame(() => requestAnimationFrame(lockScroll));
     setTimeout(lockScroll, 0);
+    setTimeout(lockScroll, 1);
+    setTimeout(lockScroll, 5);
     setTimeout(lockScroll, 10);
+    setTimeout(lockScroll, 20);
     setTimeout(lockScroll, 50);
     setTimeout(lockScroll, 100);
+    setTimeout(lockScroll, 200);
     
     setIsKeyboardVisible(true);
   };
