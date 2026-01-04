@@ -134,8 +134,8 @@ export default function App() {
   const [amount, setAmount] = useState('0');
   const [toAmount, setToAmount] = useState('0');
   const [lastEdited, setLastEdited] = useState<'from' | 'to'>('from');
-  const [fromCurrency, setFromCurrency] = useState('USD');
-  const [toCurrency, setToCurrency] = useState('EUR');
+  const [fromCurrency, setFromCurrency] = useState('INR');
+  const [toCurrency, setToCurrency] = useState('USD');
   const [exchangeRates, setExchangeRates] = useState<ExchangeRates>({});
   const [currencies, setCurrencies] = useState<Currency[]>([]);
   const [loading, setLoading] = useState(true);

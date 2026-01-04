@@ -26,6 +26,28 @@ const currencyToCountryCode: { [key: string]: string } = {
   BHD: 'bh', JOD: 'jo', LKR: 'lk', ISK: 'is', HRK: 'hr',
   BGN: 'bg', MAD: 'ma', TND: 'tn', JMD: 'jm', PEN: 'pe',
   COP: 'co', UYU: 'uy', GHS: 'gh', DZD: 'dz', KZT: 'kz',
+  // Additional currency mappings
+  AFN: 'af', ALL: 'al', AMD: 'am', ANG: 'cw', AOA: 'ao',
+  AWG: 'aw', AZN: 'az', BAM: 'ba', BBD: 'bb', BIF: 'bi',
+  BMD: 'bm', BND: 'bn', BOB: 'bo', BSD: 'bs', BTN: 'bt',
+  BWP: 'bw', BYN: 'by', BZD: 'bz', CDF: 'cd', CLF: 'cl',
+  CNH: 'cn', CRC: 'cr', CUP: 'cu', CVE: 'cv', DJF: 'dj',
+  DOP: 'do', ERN: 'er', ETB: 'et', FJD: 'fj', FKP: 'fk',
+  FOK: 'fo', GEL: 'ge', GGP: 'gg', GIP: 'gi', GMD: 'gm',
+  GNF: 'gn', GTQ: 'gt', GYD: 'gy', HNL: 'hn', HTG: 'ht',
+  IQD: 'iq', IRR: 'ir', JEP: 'je', KGS: 'kg', KHR: 'kh',
+  KMF: 'km', KPW: 'kp', KYD: 'ky', LAK: 'la', LBP: 'lb',
+  LRD: 'lr', LSL: 'ls', LYD: 'ly', MDL: 'md', MGA: 'mg',
+  MKD: 'mk', MMK: 'mm', MNT: 'mn', MOP: 'mo', MRU: 'mr',
+  MUR: 'mu', MVR: 'mv', MWK: 'mw', MZN: 'mz', NAD: 'na',
+  NIO: 'ni', NPR: 'np', PAB: 'pa', PGK: 'pg', PYG: 'py',
+  RSD: 'rs', RWF: 'rw', SBD: 'sb', SCR: 'sc', SDG: 'sd',
+  SHP: 'sh', SLE: 'sl', SOS: 'so', SRD: 'sr', SSP: 'ss',
+  STN: 'st', SVC: 'sv', SYP: 'sy', SZL: 'sz', TJS: 'tj',
+  TMT: 'tm', TOP: 'to', TTD: 'tt', TZS: 'tz', UGX: 'ug',
+  UZS: 'uz', VES: 've', VUV: 'vu', WST: 'ws', XAF: 'cm',
+  XCD: 'ag', XDR: 'im', XOF: 'sn', XPF: 'pf', YER: 'ye',
+  ZMW: 'zm', ZWL: 'zw',
 };
 
 // Generate consistent color based on currency code
@@ -62,7 +84,13 @@ const CircularFlag = ({ code }: { code: string }) => {
   const gradientColor = getColorForCurrency(code);
 
   return (
-    <div className="w-10 h-10 rounded-full overflow-hidden shadow-md border-2 border-white flex-shrink-0">
+    <div 
+      className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0"
+      style={{
+        border: '1.813px solid white',
+        boxShadow: '0px 4px 6px -1px rgba(0, 0, 0, 0.1), 0px 2px 4px -2px rgba(0, 0, 0, 0.1)',
+      }}
+    >
       <img 
         src={flagUrl} 
         alt={`${code} flag`}
@@ -139,25 +167,26 @@ export function CurrencySelector({ value, onChange, currencies }: CurrencySelect
 
   return (
     <>
-      <div className="flex justify-center">
-        <button
-          onClick={() => setIsOpen(true)}
-          className="flex items-center gap-2 px-5 py-2.5 bg-gray-50 rounded-2xl hover:bg-gray-100 transition-colors"
-        >
-          <CircularFlag code={value} />
-          <span className="text-lg text-gray-900">{value}</span>
-          <ChevronDown className="w-4 h-4 text-gray-500" />
-        </button>
-      </div>
+      <button
+        onClick={() => setIsOpen(true)}
+        className="flex items-center gap-2 px-4 h-[60px] bg-gray-50 rounded-full hover:bg-gray-100 transition-colors flex-shrink-0"
+        style={{
+          borderRadius: '9999px',
+        }}
+      >
+        <CircularFlag code={value} />
+        <span className="text-lg text-gray-900" style={{ color: '#101828' }}>{value}</span>
+        <ChevronDown className="w-4 h-4 text-gray-500 flex-shrink-0" />
+      </button>
 
       {/* Bottom Sheet Modal with Glassmorphism */}
       {isOpen && (
         <div 
           className="fixed inset-0 z-50 flex items-end justify-center"
           style={{
-            backgroundColor: 'rgba(0, 0, 0, 0.4)',
-            backdropFilter: 'blur(8px)',
-            WebkitBackdropFilter: 'blur(8px)',
+            backgroundColor: 'rgba(0, 0, 0, 0.5)',
+            backdropFilter: 'blur(12px)',
+            WebkitBackdropFilter: 'blur(12px)',
           }}
           onClick={() => {
             setIsOpen(false);
@@ -166,13 +195,12 @@ export function CurrencySelector({ value, onChange, currencies }: CurrencySelect
         >
           <div 
             ref={drawerRef}
-            className="w-full max-w-lg rounded-t-3xl flex flex-col animate-slide-up"
+            className="w-full max-w-lg rounded-t-2xl flex flex-col animate-slide-up overflow-hidden"
             style={{
-              backgroundColor: 'rgba(255, 255, 255, 0.85)',
-              backdropFilter: 'blur(20px)',
-              WebkitBackdropFilter: 'blur(20px)',
-              borderTop: '1px solid rgba(255, 255, 255, 0.3)',
-              boxShadow: '0 -4px 24px rgba(0, 0, 0, 0.15)',
+              backgroundColor: 'rgba(255, 255, 255, 0.7)',
+              backdropFilter: 'blur(40px) saturate(180%)',
+              WebkitBackdropFilter: 'blur(40px) saturate(180%)',
+              boxShadow: '0 -8px 32px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.6)',
               maxHeight: '85vh',
               paddingBottom: 'env(safe-area-inset-bottom)',
             }}
@@ -182,7 +210,9 @@ export function CurrencySelector({ value, onChange, currencies }: CurrencySelect
             <div 
               className="flex items-center justify-between p-6"
               style={{
-                borderBottom: '1px solid rgba(0, 0, 0, 0.1)',
+                borderBottom: '1px solid rgba(255, 255, 255, 0.2)',
+                backdropFilter: 'blur(10px)',
+                WebkitBackdropFilter: 'blur(10px)',
               }}
             >
               <h3 className="text-xl text-gray-900 font-medium">Select Currency</h3>
@@ -193,13 +223,16 @@ export function CurrencySelector({ value, onChange, currencies }: CurrencySelect
                 }}
                 className="w-8 h-8 rounded-full flex items-center justify-center transition-colors"
                 style={{
-                  backgroundColor: 'rgba(0, 0, 0, 0.05)',
+                  backgroundColor: 'rgba(255, 255, 255, 0.3)',
+                  backdropFilter: 'blur(10px)',
+                  WebkitBackdropFilter: 'blur(10px)',
+                  border: '1px solid rgba(255, 255, 255, 0.4)',
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = 'rgba(0, 0, 0, 0.1)';
+                  e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.5)';
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = 'rgba(0, 0, 0, 0.05)';
+                  e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.3)';
                 }}
               >
                 <X className="w-5 h-5 text-gray-600" />
@@ -210,7 +243,9 @@ export function CurrencySelector({ value, onChange, currencies }: CurrencySelect
             <div 
               className="p-4"
               style={{
-                borderBottom: '1px solid rgba(0, 0, 0, 0.1)',
+                borderBottom: '1px solid rgba(255, 255, 255, 0.2)',
+                backdropFilter: 'blur(10px)',
+                WebkitBackdropFilter: 'blur(10px)',
               }}
             >
               <input
@@ -218,11 +253,13 @@ export function CurrencySelector({ value, onChange, currencies }: CurrencySelect
                 placeholder="Search currency..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full px-4 py-3 rounded-2xl outline-none text-base focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-3 rounded-3xl outline-none text-base focus:ring-2 focus:ring-blue-500"
                 style={{
-                  backgroundColor: 'rgba(0, 0, 0, 0.05)',
-                  backdropFilter: 'blur(10px)',
-                  WebkitBackdropFilter: 'blur(10px)',
+                  backgroundColor: 'rgba(255, 255, 255, 0.4)',
+                  backdropFilter: 'blur(20px)',
+                  WebkitBackdropFilter: 'blur(20px)',
+                  border: '1px solid rgba(255, 255, 255, 0.5)',
+                  boxShadow: 'inset 0 2px 4px rgba(0, 0, 0, 0.1)',
                 }}
                 autoFocus
               />
