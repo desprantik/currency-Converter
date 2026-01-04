@@ -572,7 +572,7 @@ export default function App() {
       <div className="w-full max-w-md space-y-4 sm:space-y-6 relative flex flex-col">
         {/* Header with Logo and Icons */}
         <div className="flex items-center justify-between flex-shrink-0 px-2">
-          <h1 className="text-2xl sm:text-3xl text-[rgb(26,0,155)] font-[ABeeZee] font-bold">Konvert</h1>
+          <h1 className="text-2xl sm:text-3xl text-[rgb(26,0,155)]" style={{ fontFamily: 'Roboto', fontWeight: 100 }}>Konvert</h1>
           
           {/* Top Right Icons */}
           <div className="flex gap-2">
@@ -587,7 +587,7 @@ export default function App() {
               >
                 <Clock className="w-4 h-4 text-gray-600" />
                 {history.length > 0 && (
-                  <span className="absolute -top-1 -right-1 w-4 h-4 bg-blue-500 text-white text-xs rounded-full flex items-center justify-center">
+                  <span className="absolute -top-1 -right-1 w-4 h-4 bg-black text-white text-xs rounded-full flex items-center justify-center">
                     {history.length}
                   </span>
                 )}
@@ -677,7 +677,7 @@ export default function App() {
               >
                 <Star className={`w-4 h-4 ${isFavorite ? 'fill-current' : ''}`} />
                 {favorites.length > 0 && (
-                  <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">
+                  <span className="absolute -top-1 -right-1 w-4 h-4 bg-black text-white text-xs rounded-full flex items-center justify-center">
                     {favorites.length}
                   </span>
                 )}

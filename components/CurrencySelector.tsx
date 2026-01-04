@@ -106,7 +106,7 @@ export function CurrencySelector({ value, onChange, currencies }: CurrencySelect
       <div className="flex justify-center">
         <button
           onClick={() => setIsOpen(true)}
-          className="flex items-center gap-2 px-5 py-2.5 bg-gray-50 rounded-full hover:bg-gray-100 transition-colors"
+          className="flex items-center gap-2 px-5 py-2.5 bg-gray-50 rounded-2xl hover:bg-gray-100 transition-colors"
         >
           <CircularFlag code={value} />
           <span className="text-lg text-gray-900">{value}</span>
