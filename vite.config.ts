@@ -4,6 +4,11 @@ import react from '@vitejs/plugin-react';
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react()],
+  server: {
+    host: true, // Allow access from network (for mobile testing)
+    port: 5173,
+    strictPort: false, // Try next available port if 5173 is taken
+  },
   build: {
     outDir: 'dist',
     sourcemap: false,
