@@ -17,6 +17,8 @@ body {
   -moz-osx-font-smoothing: grayscale;
   overscroll-behavior: none;
   -webkit-overflow-scrolling: touch;
+  /* Prevent automatic scroll when input is focused on mobile */
+  touch-action: pan-y;
 }
 
 #root {

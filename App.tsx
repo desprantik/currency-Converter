@@ -830,6 +830,24 @@ export default function App() {
     return `${integerPart}.${decimalPart}`;
   };
 
+  const handleInputFocus = (e: React.FocusEvent<HTMLInputElement>) => {
+    // Prevent automatic scroll on mobile when keyboard opens
+    // Store scroll position before browser tries to scroll
+    const scrollY = window.scrollY || window.pageYOffset || document.documentElement.scrollTop;
+    
+    // Prevent scroll by locking position
+    const preventScroll = () => {
+      window.scrollTo(0, scrollY);
+    };
+    
+    // Try multiple times to prevent scroll (browser may try multiple times)
+    preventScroll();
+    requestAnimationFrame(preventScroll);
+    setTimeout(preventScroll, 0);
+    setTimeout(preventScroll, 10);
+    setTimeout(preventScroll, 50);
+  };
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setIsKeyboardVisible(true);
     const input = e.target.value;
@@ -1400,6 +1418,7 @@ export default function App() {
               value={formatAmountDisplay(amount)}
               onChange={handleInputChange}
               onKeyDown={handleInputKeyDown}
+              onFocus={handleInputFocus}
               className="text-5xl outline-none bg-transparent text-right flex-1 min-w-0"
               placeholder="0"
               style={{ 
@@ -1444,6 +1463,7 @@ export default function App() {
               value={formatAmountDisplay(toAmount || convertedAmount())}
               onChange={handleToInputChange}
               onKeyDown={handleToInputKeyDown}
+              onFocus={handleInputFocus}
               className="text-5xl outline-none bg-transparent text-right flex-1 min-w-0"
               placeholder="0"
               style={{ 
