@@ -7,10 +7,16 @@ import * as kv from "./kv_store.tsx";
 const app = new Hono();
 
 // Initialize Supabase client
-const supabase = createClient(
-  Deno.env.get('SUPABASE_URL') ?? '',
-  Deno.env.get('SUPABASE_ANON_KEY') ?? '',
-);
+// Use service role key for server-side operations to bypass RLS if needed
+const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? '';
+const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? Deno.env.get('SUPABASE_ANON_KEY') ?? '';
+
+const supabase = createClient(supabaseUrl, supabaseKey, {
+  auth: {
+    autoRefreshToken: false,
+    persistSession: false
+  }
+});
 
 // Enable logger
 app.use('*', logger(console.log));
@@ -121,30 +127,63 @@ app.get("/make-server-913e994f/history", async (c) => {
 app.post("/make-server-913e994f/history", async (c) => {
   try {
     const body = await c.req.json();
+    console.log('Received request body:', body);
+    
     const { from_amount, from_currency, to_amount, to_currency, rate, description, timestamp } = body;
+
+    // Validate required fields
+    if (!from_amount || !from_currency || !to_amount || !to_currency || !rate) {
+      return c.json({ 
+        error: 'Missing required fields', 
+        received: { from_amount, from_currency, to_amount, to_currency, rate }
+      }, 400);
+    }
+
+    // Prepare the insert data, ensuring proper types
+    const insertData: any = {
+      from_amount: String(from_amount),
+      from_currency: String(from_currency),
+      to_amount: String(to_amount),
+      to_currency: String(to_currency),
+      rate: parseFloat(String(rate)),
+      description: description || null,
+    };
+
+    // If timestamp is provided, use it for both timestamp and created_at
+    if (timestamp) {
+      insertData.timestamp = Number(timestamp);
+      // Convert timestamp (milliseconds) to ISO string for created_at
+      insertData.created_at = new Date(Number(timestamp)).toISOString();
+    }
+    // If no timestamp, let created_at use the database default (now())
+
+    console.log('Inserting history entry:', JSON.stringify(insertData, null, 2));
+    console.log('Supabase URL:', supabaseUrl);
+    console.log('Using service role key:', !!Deno.env.get('SUPABASE_SERVICE_ROLE_KEY'));
 
     const { data, error } = await supabase
       .from('conversion_history')
-      .insert([{
-        from_amount,
-        from_currency,
-        to_amount,
-        to_currency,
-        rate,
-        description,
-        timestamp,
-      }])
+      .insert([insertData])
       .select();
 
     if (error) {
       console.error('Error adding history:', error);
-      return c.json({ error: error.message }, 500);
+      console.error('Error details:', JSON.stringify(error, null, 2));
+      console.error('Error code:', error.code);
+      console.error('Error message:', error.message);
+      return c.json({ 
+        error: error.message, 
+        code: error.code,
+        details: error,
+        hint: error.hint
+      }, 500);
     }
 
+    console.log('Successfully inserted history entry:', data);
     return c.json({ data });
   } catch (error) {
     console.error('Error in add history endpoint:', error);
-    return c.json({ error: String(error) }, 500);
+    return c.json({ error: String(error), stack: error instanceof Error ? error.stack : undefined }, 500);
   }
 });
 

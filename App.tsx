@@ -164,7 +164,7 @@ export default function App() {
 
   const fetchFavorites = async () => {
     try {
-      const response = await fetch(`${SERVER_URL}/favorites`, {
+      const response = await fetch(`${SERVER_URL}/make-server-913e994f/favorites`, {
         headers: {
           'Authorization': `Bearer ${publicAnonKey}`,
         },
@@ -185,7 +185,7 @@ export default function App() {
 
   const fetchHistory = async () => {
     try {
-      const response = await fetch(`${SERVER_URL}/history`, {
+      const response = await fetch(`${SERVER_URL}/make-server-913e994f/history`, {
         headers: {
           'Authorization': `Bearer ${publicAnonKey}`,
         },
@@ -221,7 +221,7 @@ export default function App() {
       }
     } else {
       try {
-        const response = await fetch(`${SERVER_URL}/favorites`, {
+        const response = await fetch(`${SERVER_URL}/make-server-913e994f/favorites`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -248,7 +248,7 @@ export default function App() {
 
   const removeFavorite = async (id: string) => {
     try {
-      const response = await fetch(`${SERVER_URL}/favorites/${id}`, {
+      const response = await fetch(`${SERVER_URL}/make-server-913e994f/favorites/${id}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${publicAnonKey}`,
@@ -438,47 +438,59 @@ export default function App() {
 
   const saveToHistory = async (description: string) => {
     const rate = exchangeRates[toCurrency];
-    if (!rate) return;
+    if (!rate) {
+      console.error('❌ No exchange rate available');
+      return;
+    }
+
+    const payload = {
+      from_amount: amount,
+      from_currency: fromCurrency,
+      to_amount: (parseFloat(amount) * rate).toFixed(2),
+      to_currency: toCurrency,
+      rate: rate.toFixed(4),
+      description: description,
+      timestamp: Date.now(),
+    };
 
     console.log('☁️ Saving to Supabase...');
+    console.log('URL:', `${SERVER_URL}/make-server-913e994f/history`);
+    console.log('Payload:', payload);
+
     try {
-      const response = await fetch(`${SERVER_URL}/history`, {
+      const response = await fetch(`${SERVER_URL}/make-server-913e994f/history`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${publicAnonKey}`,
         },
-        body: JSON.stringify({
-          from_amount: amount,
-          from_currency: fromCurrency,
-          to_amount: (parseFloat(amount) * rate).toFixed(2),
-          to_currency: toCurrency,
-          rate: rate.toFixed(4),
-          description: description,
-          timestamp: Date.now(),
-        }),
+        body: JSON.stringify(payload),
       });
+
+      console.log('Response status:', response.status);
+      console.log('Response ok:', response.ok);
 
       if (!response.ok) {
         const error = await response.json();
         console.error('❌ Error saving history:', error);
+        alert(`Failed to save: ${error.error || error.message || 'Unknown error'}`);
         return;
       }
 
-      const { data } = await response.json();
-      console.log('✅ Successfully saved to Supabase:', data);
+      const result = await response.json();
+      console.log('✅ Successfully saved to Supabase:', result);
       await fetchHistory();
+      setHistoryDescription('');
+      setShowSaveHistory(false);
     } catch (error) {
       console.error('❌ Error saving history:', error);
+      alert(`Network error: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
-    
-    setHistoryDescription('');
-    setShowSaveHistory(false);
   };
 
   const removeHistoryEntry = async (id: string) => {
     try {
-      const response = await fetch(`${SERVER_URL}/history/${id}`, {
+      const response = await fetch(`${SERVER_URL}/make-server-913e994f/history/${id}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${publicAnonKey}`,
