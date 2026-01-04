@@ -81,15 +81,51 @@ const CircularFlag = ({ code }: { code: string }) => {
 export function CurrencySelector({ value, onChange, currencies }: CurrencySelectorProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  const drawerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden';
+      // Prevent viewport resize on mobile when keyboard opens
+      const viewport = document.querySelector('meta[name=viewport]');
+      if (viewport) {
+        viewport.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, interactive-widget=resizes-content');
+      }
     } else {
       document.body.style.overflow = '';
+      const viewport = document.querySelector('meta[name=viewport]');
+      if (viewport) {
+        viewport.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover');
+      }
     }
     return () => {
       document.body.style.overflow = '';
+    };
+  }, [isOpen]);
+
+  // Handle keyboard visibility and adjust drawer height
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const updateDrawerHeight = () => {
+      if (drawerRef.current) {
+        const viewportHeight = window.visualViewport?.height || window.innerHeight;
+        const maxHeight = Math.min(viewportHeight * 0.85, window.innerHeight * 0.85);
+        drawerRef.current.style.maxHeight = `${maxHeight}px`;
+      }
+    };
+
+    // Update on visual viewport changes (keyboard open/close)
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener('resize', updateDrawerHeight);
+    }
+    
+    updateDrawerHeight();
+
+    return () => {
+      if (window.visualViewport) {
+        window.visualViewport.removeEventListener('resize', updateDrawerHeight);
+      }
     };
   }, [isOpen]);
 
@@ -114,47 +150,86 @@ export function CurrencySelector({ value, onChange, currencies }: CurrencySelect
         </button>
       </div>
 
-      {/* Bottom Sheet Modal */}
+      {/* Bottom Sheet Modal with Glassmorphism */}
       {isOpen && (
         <div 
-          className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 backdrop-blur-sm"
+          className="fixed inset-0 z-50 flex items-end justify-center"
+          style={{
+            backgroundColor: 'rgba(0, 0, 0, 0.4)',
+            backdropFilter: 'blur(8px)',
+            WebkitBackdropFilter: 'blur(8px)',
+          }}
           onClick={() => {
             setIsOpen(false);
             setSearchTerm('');
           }}
         >
           <div 
-            className="w-full max-w-lg bg-white rounded-t-3xl max-h-[85vh] flex flex-col animate-slide-up"
+            ref={drawerRef}
+            className="w-full max-w-lg rounded-t-3xl flex flex-col animate-slide-up"
+            style={{
+              backgroundColor: 'rgba(255, 255, 255, 0.85)',
+              backdropFilter: 'blur(20px)',
+              WebkitBackdropFilter: 'blur(20px)',
+              borderTop: '1px solid rgba(255, 255, 255, 0.3)',
+              boxShadow: '0 -4px 24px rgba(0, 0, 0, 0.15)',
+              maxHeight: '85vh',
+              paddingBottom: 'env(safe-area-inset-bottom)',
+            }}
             onClick={(e) => e.stopPropagation()}
           >
             {/* Header */}
-            <div className="flex items-center justify-between p-6 border-b border-gray-100">
-              <h3 className="text-xl text-gray-900">Select Currency</h3>
+            <div 
+              className="flex items-center justify-between p-6"
+              style={{
+                borderBottom: '1px solid rgba(0, 0, 0, 0.1)',
+              }}
+            >
+              <h3 className="text-xl text-gray-900 font-medium">Select Currency</h3>
               <button 
                 onClick={() => {
                   setIsOpen(false);
                   setSearchTerm('');
                 }}
-                className="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition-colors"
+                className="w-8 h-8 rounded-full flex items-center justify-center transition-colors"
+                style={{
+                  backgroundColor: 'rgba(0, 0, 0, 0.05)',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = 'rgba(0, 0, 0, 0.1)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = 'rgba(0, 0, 0, 0.05)';
+                }}
               >
                 <X className="w-5 h-5 text-gray-600" />
               </button>
             </div>
 
             {/* Search Input */}
-            <div className="p-4 border-b border-gray-100">
+            <div 
+              className="p-4"
+              style={{
+                borderBottom: '1px solid rgba(0, 0, 0, 0.1)',
+              }}
+            >
               <input
                 type="text"
                 placeholder="Search currency..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full px-4 py-3 rounded-2xl bg-gray-50 outline-none text-base focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-3 rounded-2xl outline-none text-base focus:ring-2 focus:ring-blue-500"
+                style={{
+                  backgroundColor: 'rgba(0, 0, 0, 0.05)',
+                  backdropFilter: 'blur(10px)',
+                  WebkitBackdropFilter: 'blur(10px)',
+                }}
                 autoFocus
               />
             </div>
 
             {/* Currency List */}
-            <div className="overflow-y-auto flex-1">
+            <div className="overflow-y-auto flex-1" style={{ WebkitOverflowScrolling: 'touch' }}>
               {filteredCurrencies.map((currency) => (
                 <button
                   key={currency.code}
@@ -163,9 +238,22 @@ export function CurrencySelector({ value, onChange, currencies }: CurrencySelect
                     setIsOpen(false);
                     setSearchTerm('');
                   }}
-                  className={`w-full px-6 py-4 text-left hover:bg-gray-50 transition-colors flex items-center gap-4 ${
-                    currency.code === value ? 'bg-blue-50' : ''
-                  }`}
+                  className="w-full px-6 py-4 text-left transition-colors flex items-center gap-4"
+                  style={{
+                    backgroundColor: currency.code === value 
+                      ? 'rgba(59, 130, 246, 0.15)' 
+                      : 'transparent',
+                  }}
+                  onMouseEnter={(e) => {
+                    if (currency.code !== value) {
+                      e.currentTarget.style.backgroundColor = 'rgba(0, 0, 0, 0.05)';
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (currency.code !== value) {
+                      e.currentTarget.style.backgroundColor = 'transparent';
+                    }
+                  }}
                 >
                   <CircularFlag code={currency.code} />
                   <div className="flex flex-col flex-1">
