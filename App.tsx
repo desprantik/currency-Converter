@@ -831,21 +831,9 @@ export default function App() {
   };
 
   const handleInputFocus = (e: React.FocusEvent<HTMLInputElement>) => {
-    // Prevent automatic scroll on mobile when keyboard opens
-    // Store scroll position before browser tries to scroll
-    const scrollY = window.scrollY || window.pageYOffset || document.documentElement.scrollTop;
-    
-    // Prevent scroll by locking position
-    const preventScroll = () => {
-      window.scrollTo(0, scrollY);
-    };
-    
-    // Try multiple times to prevent scroll (browser may try multiple times)
-    preventScroll();
-    requestAnimationFrame(preventScroll);
-    setTimeout(preventScroll, 0);
-    setTimeout(preventScroll, 10);
-    setTimeout(preventScroll, 50);
+    // Page scroll is disabled via CSS, so no need to prevent scroll here
+    // Just mark keyboard as visible
+    setIsKeyboardVisible(true);
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -1150,7 +1138,7 @@ export default function App() {
   ];
 
   return (
-    <div className="min-h-screen bg-white flex items-start justify-center p-5">
+    <div className="h-full w-full bg-white flex items-start justify-center p-5 overflow-y-auto">
       <div className="w-full max-w-md space-y-4 relative flex flex-col items-start" style={{ height: '100%' }}>
         {/* Header with Logo and Icons */}
         <div className="flex items-center justify-between flex-shrink-0 h-[44.794px] w-full">
@@ -1334,8 +1322,14 @@ export default function App() {
             </div>
             <div className="relative">
               <button
-                onClick={() => {
-                  setShowFavorites(!showFavorites);
+                onClick={async (e) => {
+                  e.stopPropagation();
+                  // Toggle favorite status
+                  await toggleFavorite();
+                  // Also toggle favorites dropdown if not already a favorite
+                  if (!isFavorite) {
+                    setShowFavorites(!showFavorites);
+                  }
                   setShowHistory(false);
                 }}
                 className={`w-9 h-9 rounded-full flex items-center justify-center transition-all relative ${
@@ -1344,7 +1338,7 @@ export default function App() {
                     : 'text-gray-600 hover:bg-gray-200'
                 }`}
                 style={!isFavorite ? { backgroundColor: '#f3f4f6' } : undefined}
-                title="Favorites"
+                title={isFavorite ? "Remove from favorites" : "Add to favorites"}
               >
                 <Star className={`w-4 h-4 ${isFavorite ? 'fill-current' : ''}`} />
                 {favorites.length > 0 && (
